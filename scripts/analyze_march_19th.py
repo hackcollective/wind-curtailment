@@ -65,27 +65,28 @@ def convert_to_linear_type(df: pd.DataFrame):
 
 
 def filter_for_units_that_change(df_fpn: pd.DataFrame) -> pd.DataFrame:
-    interesting_units = set(df_fpn[df_fpn["From Level"] != df_fpn["To Level"]]['Unit ID'])
+    interesting_units = set(
+        df_fpn[df_fpn["From Level"] != df_fpn["To Level"]]["Unit ID"]
+    )
 
     return df_fpn[df_fpn["Unit ID"].isin(interesting_units)]
 
 
 def calculate_curtailment_for_settlement_period(df_fpn):
     """Sum all negative deltas i.e. curtailing actions"""
-    
+
     df_curtailed = df_fpn[df_fpn["delta"] < 0]
-    
-    #TODO: convert this all into MWh deltas
-    df_curtailed = df_curtailed.groupby('Unit ID').agg({"Fuel Type": "first", "delta": "sum"})
+
+    # TODO: convert this all into MWh deltas
+    df_curtailed = df_curtailed.groupby("Unit ID").agg(
+        {"Fuel Type": "first", "delta": "sum"}
+    )
 
     return df_curtailed
-    
 
 
 def plot_units_by_type(df: pd.DataFrame):
-    df["Fuel Type"] = df["Fuel Type"].apply(
-        lambda x: "Unknown" if pd.isnull(x) else x
-    )
+    df["Fuel Type"] = df["Fuel Type"].apply(lambda x: "Unknown" if pd.isnull(x) else x)
 
     return px.bar(
         df,
