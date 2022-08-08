@@ -38,7 +38,7 @@ if __name__ == "__main__":
         df
     )
 
-    wind_units = df_boal[df_boal["Fuel Type"] == "WIND"].index
+    wind_units = df_boal[df_boal["Fuel Type"] == "WIND"].index.unique()
 
     curtailment_dfs = []
 

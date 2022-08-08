@@ -22,11 +22,12 @@ def fetch_physical_data(start_date, end_date, save_dir: Path):
 
 def format_physical_data(df: pd.DataFrame) -> pd.DataFrame:
     df = df.rename(
-        columns={"timeFrom": "From Time", "timeTo": "To Time", 
-        "bmUnitID": "Unit"}
+        columns={"timeFrom": "From Time", "timeTo": "To Time", "bmUnitID": "Unit"}
     )
 
-    df['From Time'], df['To Time'] = df['From Time'].apply(pd.to_datetime), df['To Time'].apply(pd.to_datetime)
+    df["From Time"], df["To Time"] = df["From Time"].apply(pd.to_datetime), df[
+        "To Time"
+    ].apply(pd.to_datetime)
     return df
 
 

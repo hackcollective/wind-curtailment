@@ -20,9 +20,10 @@ def resolve_applied_bid_offer_level(df_linear: pd.DataFrame):
     """
 
     out = []
-    
+
     for accept_id, data in df_linear.groupby("Accept ID"):
-        high_freq = (data.reset_index()
+        high_freq = (
+            data.reset_index()
             .rename(columns={"index": "Unit"})
             .set_index("Time")
             .resample("T")
@@ -108,7 +109,7 @@ def analyze_one_unit(
         .interpolate()
     )
     unit_fpn_resolved["Notification Type"] = "FPN"
-    
+
     # cmobind both BOA and FPN data
     # combined_one_unit = pd.concat((unit_boal_resolved, unit_fpn_resolved)) Does this yield the same result? Not sure
 
