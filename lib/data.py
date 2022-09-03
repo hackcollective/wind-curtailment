@@ -6,6 +6,7 @@ from ElexonDataPortal import api
 API_KEY = "xutthojn7xa28q6"
 
 client = api.Client(API_KEY)
+MINUTES_TO_HOURS = 1/60
 
 
 def fetch_physical_data(start_date, end_date, save_dir: Path):
@@ -44,7 +45,7 @@ def add_bm_unit_type(df: pd.DataFrame, df_bm_units: pd.DataFrame) -> pd.DataFram
 def parse_fpn_from_physical_data(df: pd.DataFrame) -> pd.DataFrame:
     df = df[df["recordType"] == "PN"]
     df.rename(
-        columns={f"pnLevel{x}": f"{x} Level" for x in ["From", "To"]}, inplace=True
+        columns={f"pnLevel{x}": f"level{x}" for x in ["From", "To"]}, inplace=True
     )
     return df.dropna(axis=1, how="all")
 
@@ -52,7 +53,7 @@ def parse_fpn_from_physical_data(df: pd.DataFrame) -> pd.DataFrame:
 def parse_boal_from_physical_data(df: pd.DataFrame) -> pd.DataFrame:
     df = df[df["recordType"] == "BOALF"]
     df.rename(
-        columns={f"bidOfferLevel{x}": f"{x} Level" for x in ["From", "To"]}
+        columns={f"bidOfferLevel{x}": f"level{x}" for x in ["From", "To"]}
         | {"bidOfferAcceptanceNumber": "Accept ID", "acceptanceTime": "Accept Time"},
         inplace=True,
     )
