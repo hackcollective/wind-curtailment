@@ -1,8 +1,7 @@
 from multiprocessing.pool import Pool
-
-import pandas as pd
 from pathlib import Path
 
+import pandas as pd
 from ElexonDataPortal import api
 
 API_KEY = "xutthojn7xa28q6"
@@ -16,7 +15,9 @@ def call_api(start_date, end_date, unit):
     return client.get_PHYBMDATA(start_date=start_date, end_date=end_date, BMUnitId=unit)
 
 
-def fetch_physical_data(start_date, end_date, save_dir: Path, cache=True, unit_ids=None):
+def fetch_physical_data(
+    start_date, end_date, save_dir: Path, cache=True, unit_ids=None
+):
     """From a brief visual inspection, this returns data that looks the same as the stuff I downloaded manually"""
 
     file_name = save_dir / f"{start_date}-{end_date}.fthr"
@@ -38,9 +39,13 @@ def fetch_physical_data(start_date, end_date, save_dir: Path, cache=True, unit_i
 
 
 def format_physical_data(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.rename(columns={"timeFrom": "From Time", "timeTo": "To Time", "bmUnitID": "Unit"})
+    df = df.rename(
+        columns={"timeFrom": "From Time", "timeTo": "To Time", "bmUnitID": "Unit"}
+    )
 
-    df["From Time"], df["To Time"] = df["From Time"].apply(pd.to_datetime), df["To Time"].apply(pd.to_datetime)
+    df["From Time"], df["To Time"] = df["From Time"].apply(pd.to_datetime), df[
+        "To Time"
+    ].apply(pd.to_datetime)
     return df
 
 
@@ -56,7 +61,9 @@ def add_bm_unit_type(df: pd.DataFrame, df_bm_units: pd.DataFrame) -> pd.DataFram
 
 def parse_fpn_from_physical_data(df: pd.DataFrame) -> pd.DataFrame:
     df = df[df["recordType"] == "PN"]
-    df.rename(columns={f"pnLevel{x}": f"level{x}" for x in ["From", "To"]}, inplace=True)
+    df.rename(
+        columns={f"pnLevel{x}": f"level{x}" for x in ["From", "To"]}, inplace=True
+    )
     return df.dropna(axis=1, how="all")
 
 

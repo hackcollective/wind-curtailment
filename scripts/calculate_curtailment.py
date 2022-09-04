@@ -3,16 +3,16 @@
 # Linearize and compute curtailment
 # Graph
 
+import sys
 from pathlib import Path
 
-import sys
 import plotly.express as px
 
 from lib.db_utils import DbRepository
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from lib.constants import DATA_DIR, SAVE_DIR, BASE_DIR
+from lib.constants import BASE_DIR
 
 from lib.curtailment import (
     analyze_one_unit,
@@ -20,8 +20,6 @@ from lib.curtailment import (
     calculate_notified_generation_in_mwh,
 )
 from lib.data import *
-
-
 
 
 def run(db: DbRepository, start_time, end_time):
@@ -41,7 +39,7 @@ def run(db: DbRepository, start_time, end_time):
         curtailment_dfs.append(df_curtailment_unit)
 
     df_curtailment = pd.concat(curtailment_dfs)
-    total_curtailment = df_curtailment['delta'].sum() * MINUTES_TO_HOURS
+    total_curtailment = df_curtailment["delta"].sum() * MINUTES_TO_HOURS
     print(f"Total curtailment was {total_curtailment:.2f} MWh ")
 
     df_ = df_curtailment.reset_index().groupby(["Time"]).sum().reset_index()
