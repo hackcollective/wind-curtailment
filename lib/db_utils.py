@@ -42,4 +42,4 @@ class DbRepository:
 
 if __name__ == "__main__":
     db = DbRepository(BASE_DIR / "scripts/phys_data.db")
-    df_fpn, df_boal = db.get_data_for_time_range(start_time="2022-01-01", end_time="2022-01-02")
+    df_fpn, df_boal = db.get_data_for_time_range(start_time="2022-03-19", end_time="2022-03-20")

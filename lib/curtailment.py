@@ -110,10 +110,12 @@ def analyze_one_unit(
     )
     unit_fpn_resolved["Notification Type"] = "FPN"
 
-    # cmobind both BOA and FPN data
-    # combined_one_unit = pd.concat((unit_boal_resolved, unit_fpn_resolved)) Does this yield the same result? Not sure
+    # We merge BOAL to FPN, so all FPN data is preserved. We want to include
+    # units with an FPN but not BOAL
+    df_merged = unit_fpn_resolved.join(unit_boal_resolved["Level"], lsuffix="_FPN", rsuffix='_BOAL')
 
-    df_merged = unit_boal_resolved.join(unit_fpn_resolved["Level"], rsuffix="_FPN")
-    df_merged["delta"] = df_merged["Level_FPN"] - df_merged["Level"]
+    # If there is no BOALF, then the level after the BOAL is the same as the FPN!
+    df_merged["Level_After_BOAL"] = df_merged["Level_BOAL"].fillna(df_merged["Level_FPN"])
+    df_merged["delta"] = df_merged["Level_FPN"] - df_merged["Level_After_BOAL"]
 
     return df_merged

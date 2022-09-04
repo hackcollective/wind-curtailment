@@ -21,22 +21,12 @@ from lib.curtailment import (
 )
 from lib.data import *
 
-db = DbRepository(BASE_DIR / "scripts/phys_data.db")
 
 
-def run(data_dir: Path, save_dir: Path):
 
-    # df_bm_units = pd.read_excel(data_dir / "BMUFuelType.xls", header=0)
-    #
-    # df = fetch_physical_data(start_date="2022-01-01 00:00:00", end_date="2022-01-08 00:00:00", save_dir=save_dir)
-    # df = format_physical_data(df)
-    # df = add_bm_unit_type(df, df_bm_units=df_bm_units)
-    #
-    # df_fpn, df_boal = parse_fpn_from_physical_data(df), parse_boal_from_physical_data(df)
+def run(db: DbRepository, start_time, end_time):
 
-    # wind_units = df_boal[df_boal["Fuel Type"] == "WIND"].index.unique()
-
-    df_fpn, df_boal = db.get_data_for_time_range("2022-01-01", "2022-01-02")
+    df_fpn, df_boal = db.get_data_for_time_range(start_time=start_time, end_time=end_time)
     curtailment_dfs = []
     units = df_boal.index.unique()
 
@@ -51,20 +41,21 @@ def run(data_dir: Path, save_dir: Path):
         curtailment_dfs.append(df_curtailment_unit)
 
     df_curtailment = pd.concat(curtailment_dfs)
-    print(f"Total curtailment was {df_curtailment['delta'].sum() * MINUTES_TO_HOURS:.2f} MWh ")
+    total_curtailment = df_curtailment['delta'].sum() * MINUTES_TO_HOURS
+    print(f"Total curtailment was {total_curtailment:.2f} MWh ")
 
-    df_ = df_curtailment.reset_index().groupby(["Fuel Type", "Time"]).sum().reset_index()
+    df_ = df_curtailment.reset_index().groupby(["Time"]).sum().reset_index()
 
-    fig = px.area(df_, x="Time", y=["Level_FPN", "Level"], facet_col="Fuel Type")
+    fig = px.area(df_, x="Time", y=["Level_FPN", "Level_After_BOAL"])
     fig.update_traces(stackgroup=None, fill="tozeroy")
     fig.update_layout(
         yaxis=dict(title="MW"),
-        title=dict(text="Gas units are being switched on, whilst wind is being curtailed"),
+        title=dict(text=f"Total Curtailment {total_curtailment:.2f} MWh"),
     )
 
     fig.show()
 
 
 if __name__ == "__main__":
-
-    run(data_dir=DATA_DIR, save_dir=SAVE_DIR)
+    db = DbRepository(BASE_DIR / "scripts/phys_data.db")
+    run(db, start_time="2022-01-01", end_time="2022-04-01")
