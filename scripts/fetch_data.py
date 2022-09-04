@@ -1,6 +1,3 @@
-# Getting the data via the Elexon API is slow
-# Here we use multiprocessing and store the output in an SQLite DB for easy retrieval
-
 import logging
 import sqlite3
 import time
@@ -17,7 +14,7 @@ from lib.data import (
     parse_boal_from_physical_data,
     parse_fpn_from_physical_data,
 )
-from lib.db_utils import initialize_tables
+from lib.db_utils import drop_and_initialize_tables
 
 engine = create_engine("sqlite:///phys_data.db", echo=False)
 df_bm_units = pd.read_excel(DATA_DIR / "BMUFuelType.xls", header=0)
@@ -27,7 +24,31 @@ logging.basicConfig(level=logging.INFO)
 MAX_RETRIES = 1
 
 
+def run(start_date, end_date, units, chunk_size_in_days=7):
+    """
+    Collects data from the ElexonAPI, saved as a local feather file, does some preprocessing and then places in
+    an SQLite DB.
+
+    Only collects data for specified units, to keep things fast. Uses multiprocessing to grab all units in parallel.
+    """
+
+    interval = pd.Timedelta(days=chunk_size_in_days)
+
+    chunk_start = start_date
+    chunk_end = start_date + interval
+
+    while chunk_end < end_date:
+        logger.info(f"{chunk_start} to {chunk_end}")
+        t1 = time.time()
+        fetch_and_load_one_chunk(start_date=str(chunk_start), end_date=str(chunk_end), unit_ids=units)
+        t2 = time.time()
+        logger.info(f"{(t2 - t1) / 60} minutes for {interval}")
+        chunk_start = chunk_end
+        chunk_end += interval
+
+
 def write_fpn_to_db(df_fpn) -> bool:
+    """Write the FPN df to DB"""
     try:
         with engine.connect() as connection:
             df_fpn.to_sql("fpn", connection, if_exists="append", index_label="unit")
@@ -37,14 +58,18 @@ def write_fpn_to_db(df_fpn) -> bool:
 
 
 def write_boal_to_db(df_boal) -> bool:
+    """Write the BOAL df to DB, falling back to a row-by-row load if the load of the whole df fails.
+
+    This can happen because at boundaries between SPs, the same BOAL can be reported in multiple SP's. For instance,
+    if the BOAL is 00:40 -> 01.05, it will be reported in two SPs, and so we can end up trying to load the same
+    BOAL twice.
+    """
     try:
         with engine.connect() as connection:
             # Potential issue here with duplicate BOALs nuking the whole write. This can happen because
             # BOALs are extended across SPs
             try:
-                df_boal.to_sql(
-                    "boal", connection, if_exists="append", index_label="unit"
-                )
+                df_boal.to_sql("boal", connection, if_exists="append", index_label="unit")
             except (sqlite3.IntegrityError, IntegrityError) as e:
                 logging.warning(e)
                 # Try and write them one at at time
@@ -64,7 +89,9 @@ def write_boal_to_db(df_boal) -> bool:
         return False
 
 
-def run_one_sp(start_date, end_date, unit_ids):
+def fetch_and_load_one_chunk(start_date, end_date, unit_ids):
+    """Fetch and load FPN and BOAL data for `start_date` to `end_date` for units in `unit_ids"""
+    # TODO clean up the preprocessing of data here
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
 
@@ -77,25 +104,19 @@ def run_one_sp(start_date, end_date, unit_ids):
         cache=True,
         unit_ids=unit_ids,
     )
-    # df = format_physical_data(df)
+
     df = df.rename(columns={"bmUnitID": "Unit"})
-    df["timeFrom"], df["timeTo"] = df["timeFrom"].apply(pd.to_datetime), df[
-        "timeTo"
-    ].apply(pd.to_datetime)
+    df["timeFrom"], df["timeTo"] = df["timeFrom"].apply(pd.to_datetime), df["timeTo"].apply(pd.to_datetime)
 
     df = add_bm_unit_type(df, df_bm_units=df_bm_units)
 
-    df_fpn, df_boal = parse_fpn_from_physical_data(df), parse_boal_from_physical_data(
-        df
-    )
+    df_fpn, df_boal = parse_fpn_from_physical_data(df), parse_boal_from_physical_data(df)
 
     df_boal = df_boal[df_boal["Fuel Type"] == "WIND"]
     df_fpn = df_fpn[df_fpn["Fuel Type"] == "WIND"]
 
     # Duplicates can occur from multiple SP's reporting the same BOAL
-    df_boal = df_boal.drop_duplicates(
-        subset=["timeFrom", "timeTo", "Accept ID", "levelFrom", "levelTo"]
-    )
+    df_boal = df_boal.drop_duplicates(subset=["timeFrom", "timeTo", "Accept ID", "levelFrom", "levelTo"])
 
     # DB Locking collisions between processes necessitate a retry loop
     fpn_success = write_fpn_to_db(df_fpn)
@@ -120,20 +141,10 @@ if __name__ == "__main__":
 
     logger = logging.getLogger(__file__)
 
-    initialize_tables("phys_data.db")
+    drop_and_initialize_tables("phys_data.db")
     wind_units = df_bm_units[df_bm_units["FUEL TYPE"] == "WIND"]["SETT_BMU_ID"].unique()
-    # march = [(f"2022-03-{day+1:0>2d} 00:00", f"2022-03-{day+2:0>2d} 00:00", wind_units) for day in range(30)]
-    # march.append((f"2022-03-31 00:00", f"2022-04-01 00:00", wind_units))
 
-    interval = pd.Timedelta(days=7)
     start = pd.Timestamp("2022-01-01 00:00")
-    end = start + interval
+    end = pd.Timestamp("2022-09-01 00:00")
 
-    while end.month < 8:
-        logger.info(f"{start} to {end}")
-        t1 = time.time()
-        run_one_sp(start_date=str(start), end_date=str(end), unit_ids=wind_units)
-        t2 = time.time()
-        logger.info(f"{(t2-t1)/60} minutes for {interval}")
-        start = end
-        end += interval
+    run(start_date=start, end_date=end, units=wind_units)

@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 from lib.constants import SQL_DIR, BASE_DIR
 
 
-def initialize_tables(path_to_db):
+def drop_and_initialize_tables(path_to_db):
     """Init the tables of our DB, setting primary keys.
     Need to do this up front with SQLite, cannot ALTER to add primary keys later.
     """

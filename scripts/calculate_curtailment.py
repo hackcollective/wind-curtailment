@@ -1,8 +1,3 @@
-# Get all data for the specified day, for BOAL
-# Get all data for the specified day, for FPN
-# Linearize and compute curtailment
-# Graph
-
 import sys
 from pathlib import Path
 
@@ -23,6 +18,9 @@ from lib.data import *
 
 
 def run(db: DbRepository, start_time, end_time):
+    """Fetch data from the DB between `start_time` and `end_time`, and calculate and plot the FPN vs the level
+    specified by the BOAL.
+    """
 
     df_fpn, df_boal = db.get_data_for_time_range(start_time=start_time, end_time=end_time)
     curtailment_dfs = []
