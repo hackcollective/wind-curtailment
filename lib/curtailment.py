@@ -43,18 +43,18 @@ def linearize_physical_data(df: pd.DataFrame):
     """Convert a From/To horizontal format to a long format with values at different timepoitns"""
 
     df = df.copy()
-    from_columns = ["From Level", "From Time"]
-    to_columns = ["To Level", "To Time"]
+    from_columns = ["levelFrom", "timeFrom"]
+    to_columns = ["levelTo", "timeTo"]
 
     base_columns = [x for x in df.columns.copy() if x not in from_columns + to_columns]
 
     df = pd.concat(
         (
             df[base_columns + from_columns].rename(
-                columns={"From Level": "Level", "From Time": "Time"}
+                columns={"levelFrom": "Level", "timeFrom": "Time"}
             ),
             df[base_columns + to_columns].rename(
-                columns={"To Level": "Level", "To Time": "Time"}
+                columns={"levelTo": "Level", "timeTo": "Time"}
             ),
         )
     )

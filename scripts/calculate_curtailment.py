@@ -8,9 +8,11 @@ from pathlib import Path
 import sys
 import plotly.express as px
 
+from lib.db_utils import DbRepository
+
 sys.path.append(str(Path(__file__).parent.parent))
 
-from lib.constants import DATA_DIR, SAVE_DIR
+from lib.constants import DATA_DIR, SAVE_DIR, BASE_DIR
 
 from lib.curtailment import (
     analyze_one_unit,
@@ -19,22 +21,26 @@ from lib.curtailment import (
 )
 from lib.data import *
 
+db = DbRepository(BASE_DIR / "scripts/phys_data.db")
+
 
 def run(data_dir: Path, save_dir: Path):
 
-    df_bm_units = pd.read_excel(data_dir / "BMUFuelType.xls", header=0)
+    # df_bm_units = pd.read_excel(data_dir / "BMUFuelType.xls", header=0)
+    #
+    # df = fetch_physical_data(start_date="2022-01-01 00:00:00", end_date="2022-01-08 00:00:00", save_dir=save_dir)
+    # df = format_physical_data(df)
+    # df = add_bm_unit_type(df, df_bm_units=df_bm_units)
+    #
+    # df_fpn, df_boal = parse_fpn_from_physical_data(df), parse_boal_from_physical_data(df)
 
-    df = fetch_physical_data(start_date="2022-03-19 12:30", end_date="2022-03-19 13:00", save_dir=save_dir)
-    df = format_physical_data(df)
-    df = add_bm_unit_type(df, df_bm_units=df_bm_units)
+    # wind_units = df_boal[df_boal["Fuel Type"] == "WIND"].index.unique()
 
-    df_fpn, df_boal = parse_fpn_from_physical_data(df), parse_boal_from_physical_data(df)
-
-    wind_units = df_boal[df_boal["Fuel Type"] == "WIND"].index.unique()
-
+    df_fpn, df_boal = db.get_data_for_time_range("2022-01-01", "2022-01-02")
     curtailment_dfs = []
+    units = df_boal.index.unique()
 
-    for unit in wind_units:
+    for unit in units:
         df_curtailment_unit = analyze_one_unit(df_boal_unit=df_boal.loc[unit], df_fpn_unit=df_fpn.loc[unit])
 
         curtailment_in_mwh = calculate_curtailment_in_mwh(df_curtailment_unit)

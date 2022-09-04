@@ -21,7 +21,6 @@ import pandas as pd
 from lib.db_utils import initialize_tables
 
 engine = create_engine("sqlite:///phys_data.db", echo=False)
-
 df_bm_units = pd.read_excel(DATA_DIR / "BMUFuelType.xls", header=0)
 
 logging.basicConfig(level=logging.INFO)
