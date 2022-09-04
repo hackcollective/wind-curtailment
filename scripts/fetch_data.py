@@ -8,7 +8,6 @@ import numpy as np
 
 from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError, IntegrityError
-from multiprocessing import Pool
 
 from lib.constants import SAVE_DIR, DATA_DIR
 from lib.data import (
@@ -27,6 +26,8 @@ df_bm_units = pd.read_excel(DATA_DIR / "BMUFuelType.xls", header=0)
 
 logging.basicConfig(level=logging.INFO)
 
+MAX_RETRIES = 1
+
 
 def write_fpn_to_db(df_fpn) -> bool:
     try:
@@ -44,7 +45,7 @@ def write_boal_to_db(df_boal) -> bool:
             # BOALs are extended across SPs
             try:
                 df_boal.to_sql("boal", connection, if_exists="append", index_label="unit")
-            except IntegrityError as e:
+            except (sqlite3.IntegrityError, IntegrityError) as e:
                 logging.warning(e)
                 # Try and write them one at at time
                 for i in range(len(df_boal)):
@@ -82,7 +83,8 @@ def run_one_sp(start_date, end_date, unit_ids):
 
     # DB Locking collisions between processes necessitate a retry loop
     fpn_success = write_fpn_to_db(df_fpn)
-    while not fpn_success:
+    retries = 0
+    while not fpn_success and retries < MAX_RETRIES:
         logger.info("Retrying FPN after sleep")
         time.sleep(np.random.randint(1, 20))
         fpn_success = write_fpn_to_db(df_fpn)
@@ -90,11 +92,12 @@ def run_one_sp(start_date, end_date, unit_ids):
     # Separated these because pandas autocommits, so FPN could end up being retried unecessarily
     # if subsequent BOAL write has failed!
     boal_success = write_boal_to_db(df_boal)
-    while not boal_success:
+    retries = 0
+    while not boal_success and retries < MAX_RETRIES:
         logger.info("Retrying BOAL after sleep")
         time.sleep(np.random.randint(1, 20))
         boal_success = write_boal_to_db(df_boal)
-
+        retries +=1
 
 if __name__ == "__main__":
 
