@@ -1,7 +1,6 @@
 import sys
 from pathlib import Path
 
-import pandas as pd
 import plotly.express as px
 
 from lib.db_utils import DbRepository
@@ -73,8 +72,8 @@ def run(db: DbRepository, start_time, end_time):
     # plot scatter
     fig = px.scatter(x=sip_and_delta['sip'],y=sip_and_delta['delta'])
     fig.update_layout(
-        yaxis=dict(title="SIP [£/MWh]"),
-        xaxis=dict(title="Curtailment MW"),
+        xaxis=dict(title="SIP [£/MWh]"),
+        yaxis=dict(title="Curtailment MW"),
         title=dict(text="Scatter: SIP and Curtailment"),
     )
     fig.show()

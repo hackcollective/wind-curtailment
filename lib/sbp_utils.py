@@ -8,7 +8,7 @@ def get_sbp_data() -> pd.Series:
     sip = pd.read_csv(f"{BASE_DIR}/data/sspsbpniv.csv")
 
     # format datetime
-    sip["datetime"] = pd.to_datetime(sip["Settlement Date"])
+    sip["datetime"] = pd.to_datetime(sip["Settlement Date"], format='%d/%m/%Y')
     sip["datetime"] += pd.to_timedelta((sip["Settlement Period"] - 1) * 30, unit="m")
 
     # reduce to the data we want
