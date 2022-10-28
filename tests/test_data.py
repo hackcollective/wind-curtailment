@@ -1,0 +1,35 @@
+from lib.data import fetch_bod_data
+import tempfile
+from pathlib import Path
+
+
+def test_fetch_bod_data():
+
+    start_date = "2022-01-01"
+    end_date = "2022-01-02"
+
+    unit_ids = ["T_ABRBO-1", "E_ABRTW-1", "T_ACHRW-1"]
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        save_dir = Path(temp_dir)
+
+        df = fetch_bod_data(
+            start_date=start_date,
+            end_date=end_date,
+            save_dir=save_dir,
+            cache=True,
+            unit_ids=unit_ids,
+        )
+
+    record_types = df["recordType"].unique()
+    assert len(record_types) == 1
+    assert record_types[0] == "BOD"
+    # should be just BOD
+
+    assert len(df) == 96 * 3
+    assert "recordType" in df.columns
+    assert "bmUnitID" in df.columns
+    assert "timeFrom" in df.columns
+    assert "timeTo" in df.columns
+    assert "bidPrice" in df.columns
+    assert "offerPrice" in df.columns

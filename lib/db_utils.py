@@ -22,6 +22,21 @@ def drop_and_initialize_tables(path_to_db):
         connection.commit()
 
 
+def drop_and_initialize_bod_table(path_to_db):
+    """Init the tables of our DB, setting primary keys.
+    Need to do this up front with SQLite, cannot ALTER to add primary keys later.
+    """
+
+    connection = sqlite3.connect(path_to_db)
+
+    with open(SQL_DIR / "add_bod.sql") as f:
+        query = f.read()
+
+    with connection:
+        connection.executescript(query)
+        connection.commit()
+
+
 class DbRepository:
     def __init__(self, db_path: str):
         self.db_path = db_path

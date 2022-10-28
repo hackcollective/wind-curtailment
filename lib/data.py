@@ -15,6 +15,11 @@ def call_api(start_date, end_date, unit):
     return client.get_PHYBMDATA(start_date=start_date, end_date=end_date, BMUnitId=unit)
 
 
+def call_api_bod(start_date, end_date, unit):
+    """Thin wrapper to allow kwarg passing with starmap"""
+    return client.get_BOD(start_date=start_date, end_date=end_date, BMUnitId=unit)
+
+
 def fetch_physical_data(
     start_date, end_date, save_dir: Path, cache=True, unit_ids=None
 ):
@@ -31,6 +36,29 @@ def fetch_physical_data(
         df = pd.concat(unit_dfs)
     else:
         df = client.get_PHYBMDATA(start_date=start_date, end_date=end_date)
+
+    if cache:
+        df.reset_index(drop=True).to_feather(file_name)
+
+    return df
+
+
+def fetch_bod_data(
+    start_date, end_date, save_dir: Path, cache=True, unit_ids=None
+):
+    """From a brief visual inspection, this returns data that looks the same as the stuff I downloaded manually"""
+
+    file_name = save_dir / f"BOD_{start_date}-{end_date}.feather"
+    if file_name.exists():
+        return pd.read_feather(file_name)
+
+    if unit_ids is not None:
+        kwargs = [(start_date, end_date, unit) for unit in unit_ids]
+        with Pool(len(unit_ids)) as p:
+            unit_dfs = p.starmap(call_api_bod, kwargs)
+        df = pd.concat(unit_dfs)
+    else:
+        df = client.get_BOD(start_date=start_date, end_date=end_date)
 
     if cache:
         df.reset_index(drop=True).to_feather(file_name)
