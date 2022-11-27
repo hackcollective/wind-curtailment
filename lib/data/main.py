@@ -20,16 +20,16 @@ def fetch_and_load_data(start: Optional[str] = None, end: Optional[str] = None):
     # get yesterdays date
     if (start is None) or (end is None):
         now = datetime.now(tz=timezone.utc)
-        today = now.date()
-        yesterday = today - timedelta(days=1)
+        end = now.date()
+        start = end - timedelta(days=1)
 
-    start = pd.Timestamp(yesterday)
-    end = pd.Timestamp(today)
+    start = pd.Timestamp(start)
+    end = pd.Timestamp(end)
 
     wind_units = df_bm_units[df_bm_units["FUEL TYPE"] == "WIND"]["SETT_BMU_ID"].unique()
 
     # make new SQL database
-    db_url = f"phys_data_{yesterday}_{today}.db"
+    db_url = f"phys_data_{start}_{end}.db"
 
     # initialize database
     drop_and_initialize_tables(db_url)
