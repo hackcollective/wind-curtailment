@@ -2,7 +2,7 @@ name: Deploy
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   build:
@@ -16,9 +16,9 @@ jobs:
     - name: Build and publish image to GCR
       uses: carbonchain/action-container-registry@v1.1
       with:
-        project_id: solar-and-heat-pump
+        project_id: wind-curtailment
         dockerfile: ./Dockerfile
-        image: gcr.io/solar-and-heat-pump/app
+        image: gcr.io/wind-curtailment/app
         service_account_key: ${{ secrets.GCLOUD_AUTH }}
 
     - name: Deploy service to Cloud Run

@@ -5,6 +5,10 @@ from plotly.subplots import make_subplots
 def make_time_series_plot(data_df):
     # data_df needs to have the following columns
     # 'local_datetime', 'Level_FPN', 'Level_After_BOAL', 'cost_gbp'
+
+    if 'local_datetime' not in data_df.columns:
+        data_df['local_datetime'] = data_df['Time']
+
     for col in ['local_datetime', 'Level_FPN', 'Level_After_BOAL', 'cost_gbp']:
         assert col in data_df.columns
 

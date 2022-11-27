@@ -1,4 +1,4 @@
-FROM python:3.9-slim as base
+FROM python:3.10-slim as base
 
 RUN apt-get update && apt-get install && \
     apt-get install g++ --yes && \
@@ -9,11 +9,11 @@ RUN apt-get update && apt-get install && \
 COPY ./requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
-COPY ./lib /lib
-COPY ./data /data
-COPY main.py main.py
+COPY ./lib /src/lib
+COPY ./data /src/data
+COPY main.py /src/main.py
 
-WORKDIR /
+WORKDIR /src
 
 ENV PORT=8082
 EXPOSE $PORT
