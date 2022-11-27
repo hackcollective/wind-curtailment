@@ -4,6 +4,7 @@ import streamlit as st
 
 from lib.constants import BASE_DIR
 from lib.curtailment import MINUTES_TO_HOURS
+from lib.plot import make_time_series_plot
 
 
 @st.cache
@@ -17,6 +18,8 @@ def filter_data(start_date, end_date):
 
 
 df = load_csv_data()
+if 'cost_gbp' not in df.columns:
+    df['cost_gbp'] = 99.99999
 
 MIN_DATE = pd.to_datetime("2022-01-01")
 MAX_DATE = pd.to_datetime("2022-05-01")
@@ -29,12 +32,8 @@ filtered_df = filter_data(start_date, end_date)
 
 total_curtailment = filtered_df["delta"].sum() * MINUTES_TO_HOURS
 
+print(filtered_df.columns)
 
-fig = px.area(filtered_df, x="Time", y=["Level_FPN", "Level_After_BOAL"])
-fig.update_traces(stackgroup=None, fill="tozeroy")
-fig.update_layout(
-    yaxis=dict(title="MW"),
-    title=dict(text=f"Total Curtailment {total_curtailment/1000:.2f} GWh"),
-)
+fig = make_time_series_plot(filtered_df)
 
 st.plotly_chart(fig)
