@@ -36,8 +36,6 @@ services:
       context: .
       target: etl
     container_name: wind-curtailment-test
-    ports:
-      - "8000:8000"
     volumes:
       - ./lib:/src/lib
       - ./scripts:/src/scripts
@@ -47,5 +45,6 @@ services:
       - .env
     command: >
       bash -c "ls .
+      && echo $PYTHONPATH
       && pytest"
 
