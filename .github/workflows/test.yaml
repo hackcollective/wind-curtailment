@@ -18,5 +18,5 @@ jobs:
         docker-compose build
 
     - name: Tests
-      run: docker-compose app pytest
+      run: docker-compose run app pytest
 
