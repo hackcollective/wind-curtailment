@@ -18,6 +18,7 @@ from lib.curtailment import (
     calculate_curtailment_in_mwh,
     calculate_notified_generation_in_mwh,
     calculate_curtailment_costs_in_gbp,
+    analyze_curtailment,
 )
 from lib.data import *
 
@@ -90,6 +91,16 @@ def run(db: DbRepository, start_time, end_time):
     fig.show()
 
 
+def run(db: DbRepository, start_time, end_time):
+    """Fetch data from the DB between `start_time` and `end_time`, and calculate and plot the FPN vs the level
+    specified by the BOAL.
+    """
+
+    df = analyze_curtailment(db, start_time, end_time)
+    df.to_csv(BASE_DIR/f"data/outputs/results-{start_time}-{end_time}.csv")
+    make_time_series_plot(df)
+
+
 if __name__ == "__main__":
     db = DbRepository(BASE_DIR / "scripts/phys_data.db")
-    run(db, start_time="2022-01-01", end_time="2022-02-01")
+    run(db, start_time="2022-01-01", end_time="2022-10-01")
