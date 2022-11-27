@@ -7,7 +7,7 @@ services:
       context: .
     container_name: wind-curtailment
     ports:
-        - 8083:8082
+        - 8084:8082
     volumes:
-      - ./lib:/lib
-      - ./data:/data
+      - ./lib:/src/lib
+      - ./data:/src/data
