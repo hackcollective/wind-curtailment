@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install && \
     pip3 install argon2-cffi && \
     apt-get install libpq-dev --yes \
 
-sudo apt-get install libxml2-dev libxslt-dev python-dev
+RUN sudo apt-get install libxml2-dev libxslt-dev python-dev
 
 COPY ./requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
