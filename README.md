@@ -1,5 +1,14 @@
 # wind-curtailment
 
+# Deployment
+App is deployed via GH Actions to GCP Cloud Run.
+
+In the Github [workflow](./.github/workflows/deploy.yaml) the Docker image is built, pushed to container registry,
+and then a new cloud run revision is initialized against the updated image.
+
+Depends upon a single deploy secret (GLOUD_AUTH) which is in `Secrets > Actions` in Github, and is a base64 encoded
+version of the default service account credentials in GCP.
+
 # Data
 We hit the Elexon API to get data. See `scripts/fetch_data.py. This is saved to an SQLite DB. See details in that
 script.
