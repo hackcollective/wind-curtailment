@@ -1,5 +1,8 @@
 import pandas as pd
 
+from lib.data import MINUTES_TO_HOURS
+from lib.db_utils import DbRepository
+
 MINUTES_TO_HOURS = 1 / 60
 
 
@@ -118,3 +121,28 @@ def analyze_one_unit(
     df_merged["delta"] = df_merged["Level_FPN"] - df_merged["Level_After_BOAL"]
 
     return df_merged
+
+
+def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
+    """Produces a dataframe characterizing curtailment between `start_time` and `end_time`"""
+
+    df_fpn, df_boal = db.get_data_for_time_range(start_time=start_time, end_time=end_time)
+    curtailment_dfs = []
+    units = df_boal.index.unique()
+
+    for i, unit in enumerate(units):
+        df_curtailment_unit = analyze_one_unit(df_boal_unit=df_boal.loc[unit], df_fpn_unit=df_fpn.loc[unit])
+
+        curtailment_in_mwh = calculate_curtailment_in_mwh(df_curtailment_unit)
+        generation_in_mwh = calculate_notified_generation_in_mwh(df_curtailment_unit)
+
+        print(f"Curtailment for {unit} is {curtailment_in_mwh:.2f} MWh. Generation was {generation_in_mwh:.2f} MWh")
+        print(f"Done {i} out of {len(units)}")
+
+        curtailment_dfs.append(df_curtailment_unit)
+
+    df_curtailment = pd.concat(curtailment_dfs)
+    total_curtailment = df_curtailment["delta"].sum() * MINUTES_TO_HOURS
+    print(f"Total curtailment was {total_curtailment:.2f} MWh ")
+
+    return df_curtailment.reset_index().groupby(["Time"]).sum().reset_index()
