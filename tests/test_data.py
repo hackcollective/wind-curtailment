@@ -1,4 +1,4 @@
-from lib.data.data import fetch_bod_data
+from lib.data.utils import fetch_bod_data
 import tempfile
 from pathlib import Path
 

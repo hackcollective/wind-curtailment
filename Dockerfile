@@ -4,9 +4,9 @@ RUN apt-get update && apt-get install && \
     apt-get install g++ --yes && \
     apt-get install wkhtmltopdf --yes && \
     pip3 install argon2-cffi && \
-    apt-get install libpq-dev --yes \
+    apt-get install libpq-dev --yes
 
-RUN sudo apt-get install libxml2-dev libxslt-dev python-dev
+RUN apt-get install libxml2-dev libxslt-dev python-dev --yes
 
 COPY ./requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
