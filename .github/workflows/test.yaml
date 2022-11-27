@@ -18,5 +18,7 @@ jobs:
         docker-compose build
 
     - name: Tests
-      run: docker-compose run app pytest
+      run: |
+      export PYTHONPATH=${PYTHONPATH}:/lib
+      docker-compose run app echo $PYTHONPATH && pytest
 
