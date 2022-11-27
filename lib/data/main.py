@@ -5,7 +5,7 @@ from typing import Optional
 import pandas as pd
 from sqlalchemy import create_engine
 
-from lib.constants import DATA_DIR
+from lib.constants import df_bm_units
 from lib.curtailment import analyze_curtailment
 from lib.data.fetch_boa_data import run_boa
 from lib.data.fetch_bod_data import run_bod
@@ -16,6 +16,12 @@ logger = logging.getLogger(__name__)
 
 
 def fetch_and_load_data(start: Optional[str] = None, end: Optional[str] = None):
+    """
+    Entrypoint for the scheduled data refresh. Fetches data from Elexon and pushes
+    to the postgres instance.
+
+    Writes a CSV as intermediate step
+    """
 
     # get yesterdays date
     if (start is None) or (end is None):
@@ -72,4 +78,3 @@ def fetch_and_load_data(start: Optional[str] = None, end: Optional[str] = None):
         raise e
 
 
-df_bm_units = pd.read_excel(DATA_DIR / "BMUFuelType.xls", header=0)
