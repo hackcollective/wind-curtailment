@@ -1,20 +1,8 @@
-import sys
-from pathlib import Path
-
-import plotly.express as px
-
-from lib.db_utils import DbRepository
-from lib.sbp_utils import get_sbp_data
-
-from lib.constants import BASE_DIR
-
 from lib.curtailment import (
     analyze_one_unit,
-    calculate_curtailment_in_mwh,
-    calculate_notified_generation_in_mwh,
     calculate_curtailment_costs_in_gbp,
 )
-from lib.data import *
+from lib.data.utils import *
 
 # ***********
 # this os how to make the test data

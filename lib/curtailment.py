@@ -3,7 +3,7 @@ import pandas as pd
 
 from typing import Optional
 
-from lib.data import MINUTES_TO_HOURS
+from lib.data.utils import MINUTES_TO_HOURS
 from lib.db_utils import DbRepository
 
 
@@ -85,7 +85,7 @@ def calculate_curtailment_costs_in_gbp(df_merged: pd.DataFrame) -> float:
     df_merged["energy_mwh"] = df_merged["delta"] * 0.5
 
     # total costs in pounds
-    costs_gbp = - (df_merged["energy_mwh"] * df_merged["bidPrice"]).sum()
+    costs_gbp = -(df_merged["energy_mwh"] * df_merged["bidPrice"]).sum()
 
     return costs_gbp
 
@@ -134,7 +134,10 @@ def analyze_one_unit(
 
     # unsure if we should take '1' or '-1'. they seemd to have the same 'bidPrice'
     if df_bod_unit is not None:
-        df_bod_unit = df_bod_unit[df_bod_unit["bidOfferPairNumber"] == "1"]
+        df_bod_unit.reset_index(inplace=True)
+        df_bod_unit['bidOfferPairNumber'] = df_bod_unit['bidOfferPairNumber'].astype(float)
+        mask = df_bod_unit['bidOfferPairNumber'] == 1.0
+        df_bod_unit = df_bod_unit.loc[mask]
         df_bod_unit["bidPrice"] = df_bod_unit["bidPrice"].astype(float)
 
         # put bid Price into returned dat
@@ -154,17 +157,26 @@ def analyze_one_unit(
 def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
     """Produces a dataframe characterizing curtailment between `start_time` and `end_time`"""
 
-    df_fpn, df_boal = db.get_data_for_time_range(start_time=start_time, end_time=end_time)
+    df_fpn, df_boal, df_bod = db.get_data_for_time_range(start_time=start_time, end_time=end_time)
     curtailment_dfs = []
     units = df_boal.index.unique()
 
     for i, unit in enumerate(units):
-        df_curtailment_unit = analyze_one_unit(df_boal_unit=df_boal.loc[unit], df_fpn_unit=df_fpn.loc[unit])
+        df_curtailment_unit = analyze_one_unit(
+            df_boal_unit=df_boal.loc[unit],
+            df_fpn_unit=df_fpn.loc[unit],
+            df_bod_unit=df_bod.loc[unit],
+        )
 
         curtailment_in_mwh = calculate_curtailment_in_mwh(df_curtailment_unit)
         generation_in_mwh = calculate_notified_generation_in_mwh(df_curtailment_unit)
+        costs_in_gbp = calculate_curtailment_costs_in_gbp(df_curtailment_unit)
 
-        print(f"Curtailment for {unit} is {curtailment_in_mwh:.2f} MWh. Generation was {generation_in_mwh:.2f} MWh")
+        print(
+            f"Curtailment for {unit} is {curtailment_in_mwh:.2f} MWh. "
+            f"Generation was {generation_in_mwh:.2f} MWh"
+            f"Costs was {costs_in_gbp:.2f} MWh"
+        )
         print(f"Done {i} out of {len(units)}")
 
         curtailment_dfs.append(df_curtailment_unit)
@@ -173,4 +185,4 @@ def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
     total_curtailment = df_curtailment["delta"].sum() * MINUTES_TO_HOURS
     print(f"Total curtailment was {total_curtailment:.2f} MWh ")
 
-    return df_curtailment.reset_index().groupby(["Time"]).sum().reset_index()
+    return df_curtailment.reset_index().groupby(["local_datetime"]).sum().reset_index()

@@ -1,3 +1,4 @@
+import logging
 import sqlite3
 from typing import Tuple
 
@@ -6,12 +7,14 @@ from sqlalchemy import create_engine
 
 from lib.constants import SQL_DIR, BASE_DIR
 
+logger = logging.getLogger(__name__)
+
 
 def drop_and_initialize_tables(path_to_db):
     """Init the tables of our DB, setting primary keys.
     Need to do this up front with SQLite, cannot ALTER to add primary keys later.
     """
-
+    logger.info(f'drop and initialize BOA tables {path_to_db} ')
     connection = sqlite3.connect(path_to_db)
 
     with open(SQL_DIR / "init.sql") as f:
@@ -27,6 +30,7 @@ def drop_and_initialize_bod_table(path_to_db):
     Need to do this up front with SQLite, cannot ALTER to add primary keys later.
     """
 
+    logger.info(f'drop and initialize BOD tables {path_to_db} ')
     connection = sqlite3.connect(path_to_db)
 
     with open(SQL_DIR / "add_bod.sql") as f:
@@ -71,6 +75,12 @@ class DbRepository:
                 index_col="bmUnitID",
                 parse_dates=["timeFrom", "timeTo"],
             )
+
+            logger.info(f'Found {len(df_fpn)} FPNs')
+            logger.info(f'Found {len(df_boal)} BOAs')
+            logger.info(f'Found {len(df_bod)} BODs')
+
+            assert len(df_bod) > 0
 
         return df_fpn, df_boal, df_bod
 
