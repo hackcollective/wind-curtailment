@@ -2,7 +2,7 @@ name: Deploy
 
 on:
   push:
-    branches: [ add-streamlit-app ]
+    branches: [ main ]
 
 jobs:
   build:
