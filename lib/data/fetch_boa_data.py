@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 MAX_RETRIES = 1
 
 
-def run_boa(start_date, end_date, units, chunk_size_in_days=7, database_engine=None):
+def run_boa(start_date, end_date, units, chunk_size_in_days=7, database_engine=None, cache=True):
     """
     Collects data from the ElexonAPI, saved as a local feather file, does some preprocessing and then places in
     an SQLite DB.
@@ -43,7 +43,8 @@ def run_boa(start_date, end_date, units, chunk_size_in_days=7, database_engine=N
         logger.info(f"{chunk_start} to {chunk_end}")
         t1 = time.time()
         fetch_and_load_one_chunk(
-            start_date=str(chunk_start), end_date=str(chunk_end), unit_ids=units,database_engine=database_engine
+            start_date=str(chunk_start), end_date=str(chunk_end), unit_ids=units,
+            database_engine=database_engine, cache=cache
         )
         t2 = time.time()
         logger.info(f"{(t2 - t1) / 60} minutes for {interval}")
@@ -99,7 +100,7 @@ def write_boal_to_db(df_boal, database_engine) -> bool:
         return False
 
 
-def fetch_and_load_one_chunk(start_date, end_date, unit_ids, database_engine):
+def fetch_and_load_one_chunk(start_date, end_date, unit_ids, database_engine, cache=True):
     """Fetch and load FPN and BOAL data for `start_date` to `end_date` for units in `unit_ids"""
     # TODO clean up the preprocessing of data here
     logger = logging.getLogger(__name__)
@@ -111,7 +112,7 @@ def fetch_and_load_one_chunk(start_date, end_date, unit_ids, database_engine):
         start_date=start_date,
         end_date=end_date,
         save_dir=SAVE_DIR,
-        cache=True,
+        cache=cache,
         unit_ids=unit_ids,
     )
 

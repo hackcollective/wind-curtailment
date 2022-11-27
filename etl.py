@@ -8,7 +8,7 @@ from lib.data.main import fetch_and_load_data
 app = FastAPI()
 
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 
 @app.get("/")

@@ -52,6 +52,7 @@ def fetch_and_load_data(start: Optional[str] = None, end: Optional[str] = None):
         units=wind_units,
         chunk_size_in_days=1,
         database_engine=engine,
+        cache=False
     )
     run_bod(
         start_date=start,
@@ -59,6 +60,7 @@ def fetch_and_load_data(start: Optional[str] = None, end: Optional[str] = None):
         units=wind_units,
         chunk_size_in_days=1,
         database_engine=engine,
+        cache=False
     )
 
     logger.info("Running analysis")

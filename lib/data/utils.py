@@ -25,9 +25,10 @@ def fetch_physical_data(
 ):
     """From a brief visual inspection, this returns data that looks the same as the stuff I downloaded manually"""
 
-    file_name = save_dir / f"{start_date}-{end_date}.fthr"
-    if file_name.exists():
-        return pd.read_feather(file_name)
+    if cache:
+        file_name = save_dir / f"{start_date}-{end_date}.fthr"
+        if file_name.exists():
+            return pd.read_feather(file_name)
 
     if unit_ids is not None:
         kwargs = [(start_date, end_date, unit) for unit in unit_ids]
@@ -44,13 +45,14 @@ def fetch_physical_data(
 
 
 def fetch_bod_data(
-    start_date, end_date, save_dir: Path, cache=True, unit_ids=None
+    start_date, end_date, save_dir: Path, cache=True, unit_ids=None,
 ):
     """From a brief visual inspection, this returns data that looks the same as the stuff I downloaded manually"""
 
-    file_name = save_dir / f"BOD_{start_date}-{end_date}.feather"
-    if file_name.exists():
-        return pd.read_feather(file_name)
+    if cache:
+        file_name = save_dir / f"BOD_{start_date}-{end_date}.feather"
+        if file_name.exists():
+            return pd.read_feather(file_name)
 
     if unit_ids is not None:
         kwargs = [(start_date, end_date, unit) for unit in unit_ids]
