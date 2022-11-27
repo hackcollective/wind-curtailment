@@ -41,10 +41,10 @@ jobs:
         service key: ${{ secrets.GCLOUD_AUTH }}
 
     - name: Deploy ETL to Cloud Run
-        uses: stefda/action-cloud-run@v1.6
-        with:
-          image: gcr.io/wind-curtailment/etl
-          service: wind-curtailment-etl
-          project: wind-curtailment
-          region: europe-north1
-          service key: ${{ secrets.GCLOUD_AUTH }}
+      uses: stefda/action-cloud-run@v1.6
+      with:
+        image: gcr.io/wind-curtailment/etl
+        service: wind-curtailment-etl
+        project: wind-curtailment
+        region: europe-north1
+        service key: ${{ secrets.GCLOUD_AUTH }}
