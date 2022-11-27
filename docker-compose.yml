@@ -11,3 +11,19 @@ services:
     volumes:
       - ./lib:/src/lib
       - ./data:/src/data
+
+  etl:
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+    container_name: wind-curtailment-etl
+    ports:
+      - 8084:8082
+    volumes:
+      - ./lib:/src/lib
+      - ./scripts:/src/scripts
+      - ./data:/src/data
+    env_file:
+      - .env
+    working_dir: "/src"
+    entrypoint: "python scripts/write_data_to_postgres.py"

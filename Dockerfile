@@ -10,12 +10,16 @@ COPY ./requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
 COPY ./lib /src/lib
+COPY ./scripts /src/scripts
 COPY ./data /src/data
+
 COPY main.py /src/main.py
 
 WORKDIR /src
 
 ENV PORT=8082
 EXPOSE $PORT
+
+RUN export PYTHONPATH=${PYTHONPATH}:/src/lib
 
 CMD streamlit run main.py --server.port $PORT  --logger.level=info
