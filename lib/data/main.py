@@ -64,5 +64,10 @@ def fetch_and_load_data(start: Optional[str] = None, end: Optional[str] = None):
     # load csv and save to database
     df = load_data(f"./data/outputs/results-{start}-{end}.csv")
 
-    logger.info("Pushing to postgres")
-    write_data(df=df)
+    logger.info(f"Pushing to postgres, {len(df)} rows")
+    try:
+        write_data(df=df)
+    except Exception as e:
+        logger.warning("Writing the df failed")
+        raise e
+
