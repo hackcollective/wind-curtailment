@@ -21,7 +21,7 @@ CREATE TABLE bod (
         "offerPrice" REAL,
         "activeFlag" TEXT,
 
-    PRIMARY KEY("bmUnitID", "timeFrom", "timeTo")
+    PRIMARY KEY("bmUnitID", "timeFrom", "timeTo","bidOfferPairNumber")
 
     );
 

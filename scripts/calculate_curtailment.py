@@ -2,8 +2,6 @@ import sys
 from pathlib import Path
 
 import plotly.express as px
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 
 from lib.db_utils import DbRepository
 from lib.sbp_utils import get_sbp_data
@@ -20,10 +18,10 @@ from lib.curtailment import (
     calculate_curtailment_costs_in_gbp,
     analyze_curtailment,
 )
-from lib.data import *
+from lib.data.utils import *
 
 
-def run(db: DbRepository, start_time, end_time):
+def run1(db: DbRepository, start_time, end_time):
     """Fetch data from the DB between `start_time` and `end_time`, and calculate and plot the FPN vs the level
     specified by the BOAL.
     """
@@ -32,7 +30,7 @@ def run(db: DbRepository, start_time, end_time):
     curtailment_dfs = []
     units = df_boal.index.unique()
 
-    for i, unit in enumerate(units[0:5]):
+    for i, unit in enumerate(units):
         df_curtailment_unit = analyze_one_unit(
             df_boal_unit=df_boal.loc[unit],
             df_fpn_unit=df_fpn.loc[unit],

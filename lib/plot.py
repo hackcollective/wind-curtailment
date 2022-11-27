@@ -7,9 +7,9 @@ def make_time_series_plot(data_df):
     # 'local_datetime', 'Level_FPN', 'Level_After_BOAL', 'cost_gbp'
 
     if 'local_datetime' not in data_df.columns:
-        data_df['local_datetime'] = data_df['Time']
+        data_df['local_datetime'] = data_df['time']
 
-    for col in ['local_datetime', 'Level_FPN', 'Level_After_BOAL', 'cost_gbp']:
+    for col in ['local_datetime', 'level_fpn', 'level_after_boal', 'cost_gbp']:
         assert col in data_df.columns
 
     # Create figure with secondary y-axis
@@ -18,15 +18,15 @@ def make_time_series_plot(data_df):
     # Add traces
     fig.add_trace(
         go.Scatter(
-            x=data_df["local_datetime"], y=data_df["Level_FPN"], name="Level_FPN", fill="tozeroy"
+            x=data_df["local_datetime"], y=data_df["level_fpn"], name="FPN", fill="tozeroy"
         ),
         secondary_y=False,
     )
     fig.add_trace(
         go.Scatter(
             x=data_df["local_datetime"],
-            y=data_df["Level_After_BOAL"],
-            name="Level_After_BOAL",
+            y=data_df["level_after_boal"],
+            name="level after boal",
             fill="tozeroy",
         ),
         secondary_y=False,
@@ -40,7 +40,7 @@ def make_time_series_plot(data_df):
     fig.update_layout(title_text="Total Curtailment MWh")
 
     # Set x-axis title
-    fig.update_xaxes(title_text="xaxis title")
+    fig.update_xaxes(title_text="Time")
 
     # Set y-axes titles
     fig.update_yaxes(title_text="MW", secondary_y=False)
