@@ -1,4 +1,4 @@
-FROM python:3.9-slim as base
+FROM python:3.10-slim as base
 
 RUN apt-get update && apt-get install && \
     apt-get install g++ --yes && \
@@ -9,13 +9,23 @@ RUN apt-get update && apt-get install && \
 COPY ./requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
-COPY ./lib /lib
-COPY ./data /data
-COPY main.py main.py
+COPY ./lib /src/lib
+COPY ./scripts /src/scripts
+COPY ./data /src/data
 
-WORKDIR /
+COPY main.py /src/main.py
+
+WORKDIR /src
 
 ENV PORT=8082
 EXPOSE $PORT
 
+RUN export PYTHONPATH=${PYTHONPATH}:/src/lib
+
+FROM base as app
+
 CMD streamlit run main.py --server.port $PORT  --logger.level=info
+
+FROM base as etl
+
+CMD python scripts/write_data_to_postgres.py

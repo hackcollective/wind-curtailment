@@ -5,9 +5,25 @@ services:
     build:
       dockerfile:  ./Dockerfile
       context: .
+      target: app
     container_name: wind-curtailment
     ports:
-        - 8083:8082
+        - 8084:8082
     volumes:
-      - ./lib:/lib
-      - ./data:/data
+      - ./lib:/src/lib
+      - ./data:/src/data
+
+  etl:
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+      target: etl
+    container_name: wind-curtailment-etl
+    ports:
+      - 8084:8082
+    volumes:
+      - ./lib:/src/lib
+      - ./scripts:/src/scripts
+      - ./data:/src/data
+    env_file:
+      - .env
