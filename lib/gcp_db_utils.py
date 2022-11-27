@@ -54,4 +54,4 @@ def load_data(path: Path) -> pd.DataFrame:
         }
     )
     df['time'] = df['local_datetime']
-    return df[["time", "level_fpn", "level_boal", "level_after_boal", "delta_mw"]]
+    return df[["time", "level_fpn", "level_boal", "level_after_boal", "delta_mw", "cost_gbp"]]
