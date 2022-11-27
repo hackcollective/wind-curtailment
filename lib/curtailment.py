@@ -136,7 +136,7 @@ def analyze_one_unit(
     if df_bod_unit is not None:
         df_bod_unit.reset_index(inplace=True)
         df_bod_unit['bidOfferPairNumber'] = df_bod_unit['bidOfferPairNumber'].astype(float)
-        mask = df_bod_unit['bidOfferPairNumber'] == 1.0
+        mask = df_bod_unit['bidOfferPairNumber'] == -1.0
         df_bod_unit = df_bod_unit.loc[mask]
         df_bod_unit["bidPrice"] = df_bod_unit["bidPrice"].astype(float)
 
