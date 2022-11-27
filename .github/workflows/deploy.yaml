@@ -2,7 +2,7 @@ name: Deploy
 
 on:
   push:
-    branches: [ integrate-postgres ]
+    branches: [ main ]
 
 jobs:
   build:
