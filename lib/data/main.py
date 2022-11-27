@@ -45,38 +45,48 @@ def fetch_and_load_data(start: Optional[str] = None, end: Optional[str] = None):
 
     logger.info("Fetching data from ELEXON")
 
-    # get BOAs and BODs
-    run_boa(
-        start_date=start,
-        end_date=end,
-        units=wind_units,
-        chunk_size_in_days=1,
-        database_engine=engine,
-        cache=False
-    )
-    run_bod(
-        start_date=start,
-        end_date=end,
-        units=wind_units,
-        chunk_size_in_days=1,
-        database_engine=engine,
-        cache=False
-    )
+    start_chunk = start
+    end_chunk = start_chunk + pd.Timedelta('30T')
+    # loop over 30 minutes chunks of data
+    while end_chunk <= end:
 
-    logger.info("Running analysis")
-    db = DbRepository(db_url)
-    df = analyze_curtailment(db, str(start), str(end))
+        end_chunk = start_chunk + pd.Timedelta('30T')
 
-    df.to_csv(f"./data/outputs/results-{start}-{end}.csv")
+        # get BOAs and BODs
+        run_boa(
+            start_date=start_chunk,
+            end_date=end_chunk,
+            units=wind_units,
+            chunk_size_in_days=1,
+            database_engine=engine,
+            cache=False
+        )
+        run_bod(
+            start_date=start_chunk,
+            end_date=end_chunk,
+            units=wind_units,
+            chunk_size_in_days=1,
+            database_engine=engine,
+            cache=False
+        )
 
-    # load csv and save to database
-    df = load_data(f"./data/outputs/results-{start}-{end}.csv")
+        logger.info("Running analysis")
+        db = DbRepository(db_url)
+        df = analyze_curtailment(db, str(start_chunk), str(end_chunk))
 
-    logger.info(f"Pushing to postgres, {len(df)} rows")
-    try:
-        write_data(df=df)
-    except Exception as e:
-        logger.warning("Writing the df failed")
-        raise e
+        df.to_csv(f"./data/outputs/results-{start_chunk}-{end_chunk}.csv")
+
+        # load csv and save to database
+        df = load_data(f"./data/outputs/results-{start_chunk}-{end_chunk}.csv")
+
+        logger.info(f"Pushing to postgres, {len(df)} rows")
+        try:
+            write_data(df=df)
+        except Exception as e:
+            logger.warning("Writing the df failed")
+            raise e
+
+        # bump up the start_chunk by 30 minutes
+        start_chunk = start_chunk + pd.Timedelta('30T')
 
 
