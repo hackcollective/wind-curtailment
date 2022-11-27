@@ -17,6 +17,8 @@ from lib.curtailment import (
     analyze_curtailment,
 )
 
+from lib.gcp_db_utils import write_data, load_data
+
 # engine = create_engine("sqlite:///phys_data.db", echo=False)
 df_bm_units = pd.read_excel(DATA_DIR / "BMUFuelType.xls", header=0)
 
@@ -31,7 +33,6 @@ def main(db_url: Optional[str] = None):
     # get yesterdays date
     now = datetime.now(tz=timezone.utc)
     today = now.date()
-    today = datetime(2022, 1, 20)
     yesterday = today - timedelta(days=1)
 
     start = pd.Timestamp(yesterday)
@@ -47,7 +48,7 @@ def main(db_url: Optional[str] = None):
     drop_and_initialize_tables(db_url)
     drop_and_initialize_bod_table(db_url)
 
-    engine = create_engine(f'sqlite:///{db_url}', echo=False)
+    engine = create_engine(f"sqlite:///{db_url}", echo=False)
 
     # get BOAs and BODs
     run_boa(
@@ -72,7 +73,8 @@ def main(db_url: Optional[str] = None):
     df.to_csv(f"./data/outputs/results-{start}-{end}.csv")
 
     # # load csv and save to database
-    # TODO
+    df = load_data(f"./data/outputs/results-{start}-{end}.csv")
+    write_data(df=df)
 
 
 if __name__ == "__main__":

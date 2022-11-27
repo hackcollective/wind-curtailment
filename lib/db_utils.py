@@ -17,7 +17,7 @@ def drop_and_initialize_tables(path_to_db):
     logger.info(f'drop and initialize BOA tables {path_to_db} ')
     connection = sqlite3.connect(path_to_db)
 
-    with open(SQL_DIR / "init.sql") as f:
+    with open(SQL_DIR / "init_boal_db.sql") as f:
         query = f.read()
 
     with connection:
