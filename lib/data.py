@@ -77,9 +77,9 @@ def format_physical_data(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def add_bm_unit_type(df: pd.DataFrame, df_bm_units: pd.DataFrame) -> pd.DataFrame:
+def add_bm_unit_type(df: pd.DataFrame, df_bm_units: pd.DataFrame, index_name:str='Unit') -> pd.DataFrame:
     df = (
-        df.set_index("Unit")
+        df.set_index(index_name)
         .join(df_bm_units.set_index("SETT_BMU_ID")["FUEL TYPE"])
         .rename(columns={"FUEL TYPE": "Fuel Type"})
     )

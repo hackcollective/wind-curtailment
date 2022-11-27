@@ -75,7 +75,7 @@ def fetch_and_load_one_chunk(start_date, end_date, unit_ids):
 
     df["timeFrom"], df["timeTo"] = df["timeFrom"].apply(pd.to_datetime), df["timeTo"].apply(pd.to_datetime)
 
-    df = add_bm_unit_type(df, df_bm_units=df_bm_units)
+    df = add_bm_unit_type(df, df_bm_units=df_bm_units, index_name="bmUnitID")
 
     df = df[df["Fuel Type"] == "WIND"]
 
