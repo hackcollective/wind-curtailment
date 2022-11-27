@@ -12,7 +12,7 @@ def load_csv_data():
 
 
 @st.cache
-def filter_data(start_time, end_time):
+def filter_data(start_date, end_date):
     return df[(df["Time"] >= pd.to_datetime(start_date)) & (df["Time"] <= pd.to_datetime(end_date))].copy()
 
 
