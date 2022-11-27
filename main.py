@@ -35,9 +35,9 @@ year_df['time'] = filtered_df['time'].dt.month_name()
 year_df = year_df.groupby('time').sum()
 year_df['time'] = year_df.index
 
-yearly_curtailment_twh = year_df['delta_mw'].sum() / 10**6
+yearly_curtailment_twh = year_df['delta_mw'].sum() / 10**6 * 0.5
 yearly_curtailment_mgbp = year_df['cost_gbp'].sum() / 10**6
-st.write(f'Yearly Curtailment {yearly_curtailment_twh:.2f} MWh: £ {yearly_curtailment_mgbp:.2f} Millions')
+st.write(f'Wind Curtailment {yearly_curtailment_twh:.2f} TWh: £ {yearly_curtailment_mgbp:.2f} M')
 
 # monthly plot
 fig = make_time_series_plot(year_df.copy(), title=f'Wind Curtailment for 2022')
@@ -52,9 +52,9 @@ monthly_df['time'] = monthly_df['time'].dt.date
 monthly_df = monthly_df.groupby('time').sum()
 monthly_df['time'] = monthly_df.index
 
-monthly_curtailment_gwh = monthly_df['delta_mw'].sum() / 10**3
-monthly_curtailment_kgbp = monthly_df['cost_gbp'].sum() / 10**3
-st.write(f'Yearly Curtailment {monthly_curtailment_gwh:.2f} GWh: £ {monthly_curtailment_kgbp:.2f} 1000s')
+monthly_curtailment_gwh = monthly_df['delta_mw'].sum() / 10**3 *0.5
+monthly_curtailment_kgbp = monthly_df['cost_gbp'].sum() / 10**6
+st.write(f'Wind Curtailment {monthly_curtailment_gwh:.2f} GWh: £ {monthly_curtailment_kgbp:.2f} M')
 
 # daily plot plot
 fig = make_time_series_plot(monthly_df.copy(), title=f'Wind Curtailment for {option_month}')
@@ -68,9 +68,9 @@ daily_df = filtered_df[filtered_df['time'].dt.date == option_day]
 daily_df = daily_df.groupby('time').sum()
 daily_df['time'] = daily_df.index
 
-daily_curtailment_gwh = monthly_df['delta_mw'].sum() / 10**3
-daily_curtailment_kgbp = monthly_df['cost_gbp'].sum() / 10**3
-st.write(f'Yearly Curtailment {daily_curtailment_gwh:.2f} GWh: £ {daily_curtailment_kgbp:.2f} 1000s')
+daily_curtailment_gwh = monthly_df['delta_mw'].sum() / 10**3 *0.5
+daily_curtailment_kgbp = monthly_df['cost_gbp'].sum() / 10**6
+st.write(f'Wind Curtailment {daily_curtailment_gwh:.2f} GWh: £ {daily_curtailment_kgbp:.2f} M')
 
 fig = make_time_series_plot(daily_df.copy(), title=f'Wind Curtailment for {option_day}')
 st.plotly_chart(fig)

@@ -44,6 +44,8 @@ def make_time_series_plot(data_df, title:str = None):
     # Set x-axis title
     fig.update_xaxes(title_text="Time")
 
+    fig.update_layout(barmode='group', bargap=0.5, bargroupgap=0.0)
+
     # Set y-axes titles
     fig.update_yaxes(title_text="GW", secondary_y=False)
     fig.update_yaxes(title_text="Costs [GBP]", secondary_y=True)
