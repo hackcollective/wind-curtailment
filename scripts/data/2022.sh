@@ -1,0 +1,11 @@
+bash january_2022.sh
+bash febuary_2022.sh
+bash march_2022.sh
+bash april_2022.sh
+bash may_2022.sh
+bash june_2022.sh
+bash july_2022.sh
+bash august_2022.sh
+bash september_2022.sh
+bash october_2022.sh
+bash november_2022.sh
