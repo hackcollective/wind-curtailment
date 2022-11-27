@@ -26,11 +26,14 @@ ENV PORT=8082
 EXPOSE $PORT
 
 RUN export PYTHONPATH=${PYTHONPATH}:/src/lib
+RUN export PYTHONPATH=${PYTHONPATH}:/lib
 
+# make streamlit app
 FROM base as app
 
 CMD streamlit run main.py --server.port $PORT  --logger.level=info
 
+# make etl runner
 FROM base as etl
 ENV PORT=8000
 EXPOSE $PORT
