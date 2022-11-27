@@ -5,12 +5,12 @@ from typing import Optional
 import pandas as pd
 from sqlalchemy import create_engine
 
+from lib.constants import DATA_DIR
 from lib.curtailment import analyze_curtailment
 from lib.data.fetch_boa_data import run_boa
 from lib.data.fetch_bod_data import run_bod
 from lib.db_utils import drop_and_initialize_tables, drop_and_initialize_bod_table, DbRepository
 from lib.gcp_db_utils import load_data, write_data
-from scripts.fetch_data_and_calculate_curtailment import df_bm_units
 
 logger = logging.getLogger(__name__)
 
@@ -71,3 +71,5 @@ def fetch_and_load_data(start: Optional[str] = None, end: Optional[str] = None):
         logger.warning("Writing the df failed")
         raise e
 
+
+df_bm_units = pd.read_excel(DATA_DIR / "BMUFuelType.xls", header=0)
