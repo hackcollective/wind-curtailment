@@ -12,18 +12,18 @@ CREATE TABLE bod (
         "ngcBMUnitName" TEXT,
         "settlementDate" TEXT,
         "settlementPeriod" TEXT,
-        'bidOfferPairNumber' REAL,
+        "bidOfferPairNumber" REAL,
         "timeFrom" DATETIME,
         "bidOfferLevelFrom" REAL,
         "timeTo" DATETIME,
         "bidOfferLevelTo" REAL,
         "bidPrice" REAL,
         "offerPrice" REAL,
-        "activeFlag" TEXT
+        "activeFlag" TEXT,
 
-    PRIMARY KEY("unit", "timeFrom", "timeTo")
+    PRIMARY KEY("bmUnitID", "timeFrom", "timeTo")
 
     );
 
-CREATE INDEX ix_fpn_unit ON bod ("bmUnitID");
-CREATE INDEX ix_fpn_time ON bod ("timeFrom", "timeTo");
+CREATE INDEX ix_bod_unit ON bod ("bmUnitID");
+CREATE INDEX ix_bod_time ON bod ("timeFrom", "timeTo");
