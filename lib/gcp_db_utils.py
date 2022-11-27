@@ -4,7 +4,6 @@ from pathlib import Path
 
 import pandas as pd
 from sqlalchemy import create_engine
-from sqlalchemy.engine.url import URL
 
 from lib import constants
 
@@ -17,15 +16,9 @@ def get_db_connection():
     If deployed, then use the unix socket approach described here:
     https://cloud.google.com/sql/docs/mysql/connect-run#connect_to
     """
-    if unix_socket_path := os.environ.get("INSTANCE_UNIX_SOCKET"):
-        address = URL.create(
-            drivername="postgresql+psycopg2",
-            username=constants.DB_USERNAME,
-            password=constants.DB_PASSWORD,
-            database="postgres",
-            query={"unix_sock": "{}/.s.PGSQL.5432".format(unix_socket_path)}
-            # https://stackoverflow.com/questions/54967660/connect-to-a-database-over-a-unix-socket-using-sqlalchemy
-        )
+
+    if cloud_sql_instance := os.environ.get("CLOUD_SQL_INSTANCE"):
+        address = f"postgresql+psycopg2://{constants.DB_USERNAME}:{constants.DB_PASSWORD}@{constants.DB_NAME}?host={constants.HOST}:{cloud_sql_instance}"
     else:
         address = f"postgresql+psycopg2://{constants.DB_USERNAME}:{constants.DB_PASSWORD}@{constants.DB_IP}:5432"
     return create_engine(url=address)
