@@ -15,3 +15,9 @@ requests
 streamlit
 SQLAlchemy==1.4.37
 xlrd
+
+
+# etl
+
+fastapi
+uvicorn

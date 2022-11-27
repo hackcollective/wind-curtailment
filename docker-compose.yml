@@ -20,10 +20,14 @@ services:
       target: etl
     container_name: wind-curtailment-etl
     ports:
-      - 8084:8082
+      - "8000:8000"
     volumes:
       - ./lib:/src/lib
       - ./scripts:/src/scripts
       - ./data:/src/data
+      - ./:/src/
     env_file:
       - .env
+    entrypoint:  uvicorn etl:app --reload --host "0.0.0.0"
+
+
