@@ -26,6 +26,22 @@ def write_data(df: pd.DataFrame):
         df.to_sql("curtailment", conn, if_exists="append", index=False)
 
 
+def read_data(start_time='2022-01-01',end_time='2023-01-01'):
+    engine = get_db_connection()
+
+    raw_query = f"select * from curtailment " \
+                f"where time BETWEEN '{start_time}' AND '{end_time}'" \
+                f"order by time"
+
+    with engine.connect() as conn:
+        df_curtailment = pd.read_sql(
+            raw_query,
+            conn,
+            parse_dates=["timeFrom", "timeTo"],
+        )
+
+    return df_curtailment
+
 def load_data(path: Path) -> pd.DataFrame:
     df = pd.read_csv(path, index_col=0)
     df = df.rename(
