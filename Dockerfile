@@ -10,6 +10,7 @@ COPY ./requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
 COPY ./lib /src/lib
+COPY ./sql /src/sql
 COPY ./scripts /src/scripts
 COPY ./data /src/data
 
