@@ -2,7 +2,7 @@ name: Deploy
 
 on:
   push:
-    branches: [ main ]
+    branches: [ wire-etl-to-script ]
 
 jobs:
   build:
