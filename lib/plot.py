@@ -31,8 +31,9 @@ def make_time_series_plot(data_df):
         ),
         secondary_y=False,
     )
+    # 50% opaacity
     fig.add_trace(
-        go.Scatter(x=data_df["local_datetime"], y=data_df["cost_gbp"], name="cost_gbp"),
+        go.Bar(x=data_df["local_datetime"], y=data_df["cost_gbp"], name="cost_gbp"),
         secondary_y=True,
     )
 
