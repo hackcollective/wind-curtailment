@@ -48,6 +48,10 @@ def linearize_physical_data(df: pd.DataFrame):
     from_columns = ["levelFrom", "timeFrom"]
     to_columns = ["levelTo", "timeTo"]
 
+    if type(df) == pd.Series:
+        # this sometime happens if there is only one data point
+        df = pd.DataFrame(df).T
+
     base_columns = [x for x in df.columns.copy() if x not in from_columns + to_columns]
 
     df = pd.concat(

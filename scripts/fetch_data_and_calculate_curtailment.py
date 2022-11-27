@@ -27,13 +27,15 @@ logger = logging.getLogger(__name__)
 
 
 @click.command()
-@click.option("--db_url", default=None)
-def main(db_url: Optional[str] = None):
+@click.option("--start", default=None)
+@click.option("--end", default=None)
+def main(start: Optional[str] = None, end: Optional[str] = None):
 
     # get yesterdays date
-    now = datetime.now(tz=timezone.utc)
-    today = now.date()
-    yesterday = today - timedelta(days=1)
+    if (start is None) or (end is None):
+        now = datetime.now(tz=timezone.utc)
+        today = now.date()
+        yesterday = today - timedelta(days=1)
 
     start = pd.Timestamp(yesterday)
     end = pd.Timestamp(today)
@@ -41,8 +43,8 @@ def main(db_url: Optional[str] = None):
     wind_units = df_bm_units[df_bm_units["FUEL TYPE"] == "WIND"]["SETT_BMU_ID"].unique()
 
     # make new database
-    if db_url is None:
-        db_url = f"phys_data_{yesterday}_{today}.db"
+
+    db_url = f"phys_data_{yesterday}_{today}.db"
 
     # initializedatabase
     drop_and_initialize_tables(db_url)
