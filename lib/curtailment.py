@@ -48,6 +48,10 @@ def linearize_physical_data(df: pd.DataFrame):
     from_columns = ["levelFrom", "timeFrom"]
     to_columns = ["levelTo", "timeTo"]
 
+    if type(df) == pd.Series:
+        # this sometime happens if there is only one data point
+        df = pd.DataFrame(df).T
+
     base_columns = [x for x in df.columns.copy() if x not in from_columns + to_columns]
 
     df = pd.concat(
@@ -136,7 +140,7 @@ def analyze_one_unit(
     if df_bod_unit is not None:
         df_bod_unit.reset_index(inplace=True)
         df_bod_unit['bidOfferPairNumber'] = df_bod_unit['bidOfferPairNumber'].astype(float)
-        mask = df_bod_unit['bidOfferPairNumber'] == 1.0
+        mask = df_bod_unit['bidOfferPairNumber'] == -1.0
         df_bod_unit = df_bod_unit.loc[mask]
         df_bod_unit["bidPrice"] = df_bod_unit["bidPrice"].astype(float)
 
