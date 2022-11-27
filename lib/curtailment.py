@@ -175,7 +175,7 @@ def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
         print(
             f"Curtailment for {unit} is {curtailment_in_mwh:.2f} MWh. "
             f"Generation was {generation_in_mwh:.2f} MWh"
-            f"Costs was {costs_in_gbp:.2f} MWh"
+            f"Costs was {costs_in_gbp:.2f} £"
         )
         print(f"Done {i} out of {len(units)}")
 
