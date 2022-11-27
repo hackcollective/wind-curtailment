@@ -23,7 +23,8 @@ def get_db_connection():
             username=constants.DB_USERNAME,
             password=constants.DB_PASSWORD,
             database="postgres",
-            query={"unix_socket": unix_socket_path},
+            query={"unix_socket": f"host={unix_socket_path}"},
+            # https://stackoverflow.com/questions/54967660/connect-to-a-database-over-a-unix-socket-using-sqlalchemy
         )
     else:
         address = f"postgresql+psycopg2://{constants.DB_USERNAME}:{constants.DB_PASSWORD}@{constants.DB_IP}:5432"
