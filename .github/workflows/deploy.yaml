@@ -2,7 +2,7 @@ name: Deploy
 
 on:
   push:
-    branches: [ main ]
+    branches: [ integrate-postgres ]
 
 jobs:
   build:
@@ -13,15 +13,25 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Build and publish image to GCR
+    - name: Build and publish app image to GCR
       uses: carbonchain/action-container-registry@v1.1
       with:
         project_id: wind-curtailment
         dockerfile: ./Dockerfile
+        target: app
         image: gcr.io/wind-curtailment/app
         service_account_key: ${{ secrets.GCLOUD_AUTH }}
 
-    - name: Deploy service to Cloud Run
+    - name: Build and publish etl image to GCR
+      uses: carbonchain/action-container-registry@v1.1
+      with:
+        project_id: wind-curtailment
+        dockerfile: ./Dockerfile
+        target: etl
+        image: gcr.io/wind-curtailment/etl
+        service_account_key: ${{ secrets.GCLOUD_AUTH }}
+
+    - name: Deploy app to Cloud Run
       uses: stefda/action-cloud-run@v1.6
       with:
         image: gcr.io/wind-curtailment/app
@@ -29,3 +39,12 @@ jobs:
         project: wind-curtailment
         region: europe-north1
         service key: ${{ secrets.GCLOUD_AUTH }}
+
+    - name: Deploy ETL to Cloud Run
+        uses: stefda/action-cloud-run@v1.6
+        with:
+          image: gcr.io/wind-curtailment/etl
+          service: wind-curtailment-etl
+          project: wind-curtailment
+          region: europe-north1
+          service key: ${{ secrets.GCLOUD_AUTH }}

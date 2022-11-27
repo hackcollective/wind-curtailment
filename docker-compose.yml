@@ -5,6 +5,7 @@ services:
     build:
       dockerfile:  ./Dockerfile
       context: .
+      target: app
     container_name: wind-curtailment
     ports:
         - 8084:8082
@@ -16,6 +17,7 @@ services:
     build:
       dockerfile: ./Dockerfile
       context: .
+      target: etl
     container_name: wind-curtailment-etl
     ports:
       - 8084:8082
@@ -25,5 +27,3 @@ services:
       - ./data:/src/data
     env_file:
       - .env
-    working_dir: "/src"
-    entrypoint: "python scripts/write_data_to_postgres.py"

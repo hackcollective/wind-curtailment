@@ -22,4 +22,10 @@ EXPOSE $PORT
 
 RUN export PYTHONPATH=${PYTHONPATH}:/src/lib
 
+FROM base as app
+
 CMD streamlit run main.py --server.port $PORT  --logger.level=info
+
+FROM base as etl
+
+CMD python scripts/write_data_to_postgres.py
