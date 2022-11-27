@@ -16,7 +16,7 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.get("/fetch")
+@app.post("/fetch")
 async def fetch_data(background_tasks: BackgroundTasks):
     background_tasks.add_task(fetch_and_load_data)
     now = datetime.now()
