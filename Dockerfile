@@ -10,12 +10,24 @@ COPY ./requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
 COPY ./lib /src/lib
+COPY ./scripts /src/scripts
 COPY ./data /src/data
+
 COPY main.py /src/main.py
+COPY etl.py /src/etl.py
 
 WORKDIR /src
 
 ENV PORT=8082
 EXPOSE $PORT
 
+RUN export PYTHONPATH=${PYTHONPATH}:/src/lib
+
+FROM base as app
+
 CMD streamlit run main.py --server.port $PORT  --logger.level=info
+
+FROM base as etl
+ENV PORT=8000
+EXPOSE $PORT
+CMD uvicorn etl:app --reload --host "0.0.0.0"
