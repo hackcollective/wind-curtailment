@@ -28,6 +28,10 @@ EXPOSE $PORT
 RUN export PYTHONPATH=${PYTHONPATH}:/src/lib
 RUN export PYTHONPATH=${PYTHONPATH}:/lib
 
+# make test app
+FROM base as test
+RUN export PYTHONPATH=${PYTHONPATH}:/lib
+
 # make streamlit app
 FROM base as app
 

@@ -34,13 +34,12 @@ services:
     build:
       dockerfile: ./Dockerfile
       context: .
-      target: etl
+      target: test
     container_name: wind-curtailment-test
     volumes:
       - ./lib:/src/lib
       - ./scripts:/src/scripts
       - ./data:/src/data
-      - ./:/src/
     env_file:
       - .env
     command: >

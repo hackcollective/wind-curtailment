@@ -19,4 +19,4 @@ jobs:
 
     - name: Tests
       run: |
-        docker-compose run tests
+        docker-compose run test
