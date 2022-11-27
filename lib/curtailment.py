@@ -1,5 +1,7 @@
 import pandas as pd
 
+from typing import Optional
+
 MINUTES_TO_HOURS = 1 / 60
 
 
@@ -48,9 +50,7 @@ def linearize_physical_data(df: pd.DataFrame):
             df[base_columns + from_columns].rename(
                 columns={"levelFrom": "Level", "timeFrom": "Time"}
             ),
-            df[base_columns + to_columns].rename(
-                columns={"levelTo": "Level", "timeTo": "Time"}
-            ),
+            df[base_columns + to_columns].rename(columns={"levelTo": "Level", "timeTo": "Time"}),
         )
     )
 
@@ -64,9 +64,25 @@ def calculate_curtailment_in_mwh(df_merged: pd.DataFrame) -> float:
 
     """
 
+    # TODO is this right? is delta in MW or MWH
+    # idea change delta to 'delta_mw' to be sure
     mw_minutes = df_merged["delta"].sum()
 
     return mw_minutes * MINUTES_TO_HOURS
+
+
+def calculate_curtailment_costs_in_gbp(df_merged: pd.DataFrame) -> float:
+    """
+    Calculate the curtailment implied by the difference between FPN levels and BOAL
+
+    """
+    # delta is in mw so to get energy in 30 mins we get
+    df_merged["energy_mwh"] = df_merged["delta"] * 0.5
+
+    # total costs in pounds
+    costs_gbp = - (df_merged["energy_mwh"] * df_merged["bidPrice"]).sum()
+
+    return costs_gbp
 
 
 def calculate_notified_generation_in_mwh(df_merged: pd.DataFrame) -> float:
@@ -81,7 +97,9 @@ def calculate_notified_generation_in_mwh(df_merged: pd.DataFrame) -> float:
 
 
 def analyze_one_unit(
-    df_boal_unit: pd.DataFrame, df_fpn_unit: pd.DataFrame
+    df_boal_unit: pd.DataFrame,
+    df_fpn_unit: pd.DataFrame,
+    df_bod_unit: Optional[pd.DataFrame] = None,
 ) -> pd.DataFrame:
     """Product a dataframe of actual (curtailed) vs. proposed generation"""
 
@@ -97,24 +115,32 @@ def analyze_one_unit(
         df_fpn_unit = pd.DataFrame(df_fpn_unit).T
 
     unit_fpn_resolved = (
-        linearize_physical_data(df_fpn_unit)
-        .set_index("Time")
-        .resample("T")
-        .mean()
-        .interpolate()
+        linearize_physical_data(df_fpn_unit).set_index("Time").resample("T").mean().interpolate()
     )
     unit_fpn_resolved["Notification Type"] = "FPN"
 
     # We merge BOAL to FPN, so all FPN data is preserved. We want to include
     # units with an FPN but not BOAL
-    df_merged = unit_fpn_resolved.join(
-        unit_boal_resolved["Level"], lsuffix="_FPN", rsuffix="_BOAL"
-    )
+    df_merged = unit_fpn_resolved.join(unit_boal_resolved["Level"], lsuffix="_FPN", rsuffix="_BOAL")
 
     # If there is no BOALF, then the level after the BOAL is the same as the FPN!
-    df_merged["Level_After_BOAL"] = df_merged["Level_BOAL"].fillna(
-        df_merged["Level_FPN"]
-    )
+    df_merged["Level_After_BOAL"] = df_merged["Level_BOAL"].fillna(df_merged["Level_FPN"])
     df_merged["delta"] = df_merged["Level_FPN"] - df_merged["Level_After_BOAL"]
+
+    # unsure if we should take '1' or '-1'. they seemd to have the same 'bidPrice'
+    if df_bod_unit is not None:
+        df_bod_unit = df_bod_unit[df_bod_unit["bidOfferPairNumber"] == "1"]
+        df_bod_unit["bidPrice"] = df_bod_unit["bidPrice"].astype(float)
+
+        # put bid Price into returned dat
+        df_merged["local_datetime"] = pd.to_datetime(df_merged.index)
+        df_bod_unit["local_datetime"] = pd.to_datetime(df_bod_unit["local_datetime"])
+        df_merged = df_merged.merge(
+            df_bod_unit[["bidPrice", "local_datetime"]], on=["local_datetime"]
+        )
+
+        # bid price is negative
+        df_merged["energy_mwh"] = df_merged["delta"] * 0.5
+        df_merged["cost_gbp"] = -df_merged["bidPrice"] * df_merged["energy_mwh"]
 
     return df_merged

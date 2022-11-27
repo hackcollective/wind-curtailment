@@ -49,6 +49,9 @@ def run(start_date, end_date, units, chunk_size_in_days=7):
 
 def write_bod_to_db(df_fpn) -> bool:
     """Write the BOD df to DB"""
+
+    logger.info('Writing BODs to db')
+
     try:
         with engine.connect() as connection:
             df_fpn.to_sql("bod", connection, if_exists="append", index_label="bmUnitID")

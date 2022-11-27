@@ -26,6 +26,7 @@ def test_fetch_bod_data():
     assert record_types[0] == "BOD"
     # should be just BOD
 
+    # Not sure this is working right now
     assert len(df) == 96 * 3
     assert "recordType" in df.columns
     assert "bmUnitID" in df.columns

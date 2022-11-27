@@ -64,7 +64,15 @@ class DbRepository:
                 parse_dates=["timeFrom", "timeTo"],
             )
 
-        return df_fpn, df_boal
+            df_bod = pd.read_sql(
+                raw_query("bod"),
+                conn,
+                params=(start_time, end_time),
+                index_col="bmUnitID",
+                parse_dates=["timeFrom", "timeTo"],
+            )
+
+        return df_fpn, df_boal, df_bod
 
 
 if __name__ == "__main__":
