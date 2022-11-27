@@ -1,3 +1,4 @@
+import logging
 from multiprocessing.pool import Pool
 from pathlib import Path
 
@@ -9,19 +10,23 @@ API_KEY = "xutthojn7xa28q6"
 client = api.Client(API_KEY)
 MINUTES_TO_HOURS = 1 / 60
 
+logger = logging.getLogger(__name__)
+
 
 def call_api(start_date, end_date, unit):
     """Thin wrapper to allow kwarg passing with starmap"""
+    logger.info(f"Calling BOAS API for {unit}")
     return client.get_PHYBMDATA(start_date=start_date, end_date=end_date, BMUnitId=unit)
 
 
 def call_api_bod(start_date, end_date, unit):
     """Thin wrapper to allow kwarg passing with starmap"""
+    logger.info(f"Calling BOD API for {unit}")
     return client.get_BOD(start_date=start_date, end_date=end_date, BMUnitId=unit)
 
 
 def fetch_physical_data(
-    start_date, end_date, save_dir: Path, cache=True, unit_ids=None
+    start_date, end_date, save_dir: Path, cache=True, unit_ids=None, multiprocess=False
 ):
     """From a brief visual inspection, this returns data that looks the same as the stuff I downloaded manually"""
 
@@ -31,9 +36,13 @@ def fetch_physical_data(
             return pd.read_feather(file_name)
 
     if unit_ids is not None:
-        kwargs = [(start_date, end_date, unit) for unit in unit_ids]
-        with Pool(len(unit_ids)) as p:
-            unit_dfs = p.starmap(call_api, kwargs)
+        if multiprocess:
+            kwargs = [(start_date, end_date, unit) for unit in unit_ids]
+            with Pool(len(unit_ids)) as p:
+                unit_dfs = p.starmap(call_api, kwargs)
+        else:
+            unit_dfs = [call_api(start_date, end_date, unit) for unit in unit_ids]
+
         df = pd.concat(unit_dfs)
     else:
         df = client.get_PHYBMDATA(start_date=start_date, end_date=end_date)
@@ -45,7 +54,7 @@ def fetch_physical_data(
 
 
 def fetch_bod_data(
-    start_date, end_date, save_dir: Path, cache=True, unit_ids=None,
+    start_date, end_date, save_dir: Path, cache=True, unit_ids=None, multiprocess=False
 ):
     """From a brief visual inspection, this returns data that looks the same as the stuff I downloaded manually"""
 
@@ -55,9 +64,12 @@ def fetch_bod_data(
             return pd.read_feather(file_name)
 
     if unit_ids is not None:
-        kwargs = [(start_date, end_date, unit) for unit in unit_ids]
-        with Pool(len(unit_ids)) as p:
-            unit_dfs = p.starmap(call_api_bod, kwargs)
+        if multiprocess:
+            kwargs = [(start_date, end_date, unit) for unit in unit_ids]
+            with Pool(len(unit_ids)) as p:
+                unit_dfs = p.starmap(call_api_bod, kwargs)
+        else:
+            unit_dfs = [call_api_bod(start_date, end_date, unit) for unit in unit_ids]
         df = pd.concat(unit_dfs)
     else:
         df = client.get_BOD(start_date=start_date, end_date=end_date)
