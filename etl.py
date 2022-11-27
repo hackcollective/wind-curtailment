@@ -3,7 +3,7 @@ from datetime import datetime
 
 from fastapi import FastAPI, BackgroundTasks
 
-from scripts.fetch_data_and_calculate_curtailment import main as fetch_and_load_data
+from lib.data.main import fetch_and_load_data
 
 app = FastAPI()
 
