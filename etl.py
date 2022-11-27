@@ -3,7 +3,7 @@ from datetime import datetime
 
 from fastapi import FastAPI, BackgroundTasks
 
-from scripts.write_data_to_postgres import main as fetch_and_load_data
+from scripts.fetch_data_and_calculate_curtailment import main as fetch_and_load_data
 
 app = FastAPI()
 
@@ -16,7 +16,7 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.get("/fetch")
+@app.post("/fetch")
 async def fetch_data(background_tasks: BackgroundTasks):
     background_tasks.add_task(fetch_and_load_data)
     now = datetime.now()

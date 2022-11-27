@@ -29,6 +29,7 @@ jobs:
         service: wind-curtailment-app
         project: wind-curtailment
         region: europe-north1
+        env: ./env/.env.prod
         service key: ${{ secrets.GCLOUD_AUTH }}
 
     - name: Build and publish etl image to GCR
@@ -48,4 +49,5 @@ jobs:
         service: wind-curtailment-etl
         project: wind-curtailment
         region: europe-north1
+        env: ./env/.env.prod
         service key: ${{ secrets.GCLOUD_AUTH }}
