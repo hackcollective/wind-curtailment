@@ -42,4 +42,4 @@ CMD streamlit run main.py --server.port $PORT  --logger.level=info
 FROM base as etl
 ENV PORT=8000
 EXPOSE $PORT
-CMD uvicorn etl:app --reload --host "0.0.0.0"
+CMD uvicorn etl:app --reload --host "0.0.0.0" --workers 4
