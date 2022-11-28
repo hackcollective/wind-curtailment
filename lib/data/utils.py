@@ -1,6 +1,8 @@
 import logging
+import os
 from multiprocessing.pool import Pool
 from pathlib import Path
+import multiprocessing
 
 import pandas as pd
 from ElexonDataPortal import api
@@ -12,6 +14,7 @@ MINUTES_TO_HOURS = 1 / 60
 N_POOL_INSTANCES = 20
 
 logger = logging.getLogger(__name__)
+multiprocessing.log_to_stderr()
 
 
 def call_api(start_date, end_date, unit):
@@ -39,7 +42,7 @@ def fetch_physical_data(
     if unit_ids is not None:
         if multiprocess:
             kwargs = [(start_date, end_date, unit) for unit in unit_ids]
-            with Pool(N_POOL_INSTANCES) as p:
+            with Pool(os.getenv('N_POOL_INSTANCES',N_POOL_INSTANCES)) as p:
                 unit_dfs = p.starmap(call_api, kwargs)
         else:
             unit_dfs = []
@@ -73,7 +76,7 @@ def fetch_bod_data(
     if unit_ids is not None:
         if multiprocess:
             kwargs = [(start_date, end_date, unit) for unit in unit_ids]
-            with Pool(N_POOL_INSTANCES) as p:
+            with Pool(os.getenv('N_POOL_INSTANCES',N_POOL_INSTANCES)) as p:
                 unit_dfs = p.starmap(call_api_bod, kwargs)
         else:
             unit_dfs = []
