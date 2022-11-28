@@ -29,7 +29,7 @@ def main(
             end=end,
             chunk_size_minutes=chunk_size_minutes,
             multiprocess=True,
-            pull_data_once=False,
+            pull_data_once=True,
         )
 
     # run job now
