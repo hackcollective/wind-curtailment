@@ -80,8 +80,6 @@ class DbRepository:
             logger.info(f'Found {len(df_boal)} BOAs')
             logger.info(f'Found {len(df_bod)} BODs')
 
-            assert len(df_bod) > 0
-
         return df_fpn, df_boal, df_bod
 
 
