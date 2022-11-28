@@ -48,6 +48,7 @@ def fetch_and_load_data(
     while end_chunk <= end:
 
         end_chunk = start_chunk + pd.Timedelta(f"{chunk_size_minutes}T")
+        logger.info(f'Running chunk from {start_chunk=} to {end_chunk=}')
 
         # make new SQL database
         db_url = f"phys_data_{start_chunk}_{end_chunk}.db"
