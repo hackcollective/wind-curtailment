@@ -24,13 +24,16 @@ def main(
     logger.info(f"Running ETL service, data is pulled now and at 04:00 {start=} {end=} {chunk_size_minutes=}")
 
     def job():
-        fetch_and_load_data(
-            start=start,
-            end=end,
-            chunk_size_minutes=chunk_size_minutes,
-            multiprocess=True,
-            pull_data_once=True,
-        )
+        try:
+            fetch_and_load_data(
+                start=start,
+                end=end,
+                chunk_size_minutes=chunk_size_minutes,
+                multiprocess=True,
+                pull_data_once=True,
+            )
+        except Exception as e:
+            logger.warning(e)
 
     # run job now
     job()

@@ -1,4 +1,5 @@
 import pandas as pd
+import logging
 
 
 from typing import Optional
@@ -6,6 +7,7 @@ from typing import Optional
 from lib.data.utils import MINUTES_TO_HOURS
 from lib.db_utils import DbRepository
 
+logger = logging.getLogger(__name__)
 
 MINUTES_TO_HOURS = 1 / 60
 
@@ -176,17 +178,17 @@ def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
         generation_in_mwh = calculate_notified_generation_in_mwh(df_curtailment_unit)
         costs_in_gbp = calculate_curtailment_costs_in_gbp(df_curtailment_unit)
 
-        print(
+        logger.debug(
             f"Curtailment for {unit} is {curtailment_in_mwh:.2f} MWh. "
             f"Generation was {generation_in_mwh:.2f} MWh"
             f"Costs was {costs_in_gbp:.2f} £"
         )
-        print(f"Done {i} out of {len(units)}")
+        logger.debug(f"Done {i} out of {len(units)}")
 
         curtailment_dfs.append(df_curtailment_unit)
 
     df_curtailment = pd.concat(curtailment_dfs)
     total_curtailment = df_curtailment["delta"].sum() * MINUTES_TO_HOURS
-    print(f"Total curtailment was {total_curtailment:.2f} MWh ")
+    logger.debug(f"Total curtailment was {total_curtailment:.2f} MWh ")
 
     return df_curtailment.reset_index().groupby(["local_datetime"]).sum().reset_index()
