@@ -53,6 +53,7 @@ def fetch_and_load_data(start: Optional[str] = None, end: Optional[str] = None):
         end_chunk = start_chunk + pd.Timedelta('30T')
 
         # get BOAs and BODs
+        # TODO remove chunk size here as we are only get 30 minutes of data
         run_boa(
             start_date=start_chunk,
             end_date=end_chunk,
