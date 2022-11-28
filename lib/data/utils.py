@@ -40,29 +40,30 @@ def fetch_physical_data(
         if file_name.exists():
             return pd.read_feather(file_name)
 
-    if unit_ids is not None:
-        if multiprocess:
-            unit_dfs = []
-            with concurrent.futures.ThreadPoolExecutor(max_workers=int(os.getenv('N_POOL_INSTANCES',N_POOL_INSTANCES))) as executor:
-
-                tasks = [executor.submit(call_api, start_date,end_date, unit) for unit in unit_ids]
-
-                for future in concurrent.futures.as_completed(tasks):
-                    data = future.result()
-                    unit_dfs.append(data)
-
-        else:
-            unit_dfs = []
-            for i, unit in enumerate(unit_ids):
-                logger.info(
-                    f"Calling API PHYBMDATA for {unit} ({i}/{len(unit_ids)}) "
-                    f"{start_date=} {end_date=}"
-                )
-                unit_dfs.append(call_api(start_date, end_date, unit))
-
-        df = pd.concat(unit_dfs)
-    else:
-        df = client.get_PHYBMDATA(start_date=start_date, end_date=end_date)
+    # if unit_ids is not None:
+    #         if multiprocess:
+    #             unit_dfs = []
+    #             with concurrent.futures.ThreadPoolExecutor(max_workers=int(os.getenv('N_POOL_INSTANCES',N_POOL_INSTANCES))) as executor:
+    #
+    #                 tasks = [executor.submit(call_api, start_date,end_date, unit) for unit in unit_ids]
+    #
+    #                 for future in concurrent.futures.as_completed(tasks):
+    #                     data = future.result()
+    #                     unit_dfs.append(data)
+    #
+    #         else:
+    #             unit_dfs = []
+    #             for i, unit in enumerate(unit_ids):
+    #                 logger.info(
+    #                     f"Calling API PHYBMDATA for {unit} ({i}/{len(unit_ids)}) "
+    #                     f"{start_date=} {end_date=}"
+    #                 )
+    #                 unit_dfs.append(call_api(start_date, end_date, unit))
+    #
+    #         df = pd.concat(unit_dfs)
+    # else:
+    df = client.get_PHYBMDATA(start_date=start_date, end_date=end_date)
+    df = df[df['bmUnitID'].isin(unit_ids)]
 
     if cache:
         df.reset_index(drop=True).to_feather(file_name)
@@ -80,30 +81,31 @@ def fetch_bod_data(
         if file_name.exists():
             return pd.read_feather(file_name)
 
-    if unit_ids is not None:
-        if multiprocess:
-
-            unit_dfs = []
-            with concurrent.futures.ThreadPoolExecutor(
-                    max_workers=int(os.getenv('N_POOL_INSTANCES', N_POOL_INSTANCES))) as executor:
-
-                tasks = [executor.submit(call_api_bod, start_date, end_date, unit) for unit in unit_ids]
-
-                for future in concurrent.futures.as_completed(tasks):
-                    data = future.result()
-                    unit_dfs.append(data)
-
-        else:
-            unit_dfs = []
-            for i, unit in enumerate(unit_ids):
-                logger.info(
-                    f"Calling API BOD for {unit} ({i}/{len(unit_ids)}) "
-                    f"{start_date=} {end_date=}"
-                )
-                unit_dfs.append(call_api_bod(start_date, end_date, unit))
-        df = pd.concat(unit_dfs)
-    else:
-        df = client.get_BOD(start_date=start_date, end_date=end_date)
+    # if unit_ids is not None:
+    #     if multiprocess:
+    #
+    #         unit_dfs = []
+    #         with concurrent.futures.ThreadPoolExecutor(
+    #                 max_workers=int(os.getenv('N_POOL_INSTANCES', N_POOL_INSTANCES))) as executor:
+    #
+    #             tasks = [executor.submit(call_api_bod, start_date, end_date, unit) for unit in unit_ids]
+    #
+    #             for future in concurrent.futures.as_completed(tasks):
+    #                 data = future.result()
+    #                 unit_dfs.append(data)
+    #
+    #     else:
+    #         unit_dfs = []
+    #         for i, unit in enumerate(unit_ids):
+    #             logger.info(
+    #                 f"Calling API BOD for {unit} ({i}/{len(unit_ids)}) "
+    #                 f"{start_date=} {end_date=}"
+    #             )
+    #             unit_dfs.append(call_api_bod(start_date, end_date, unit))
+    #     df = pd.concat(unit_dfs)
+    # else:
+    df = client.get_BOD(start_date=start_date, end_date=end_date)
+    df = df[df['bmUnitID'].isin(unit_ids)]
 
     if cache:
         df.reset_index(drop=True).to_feather(file_name)
