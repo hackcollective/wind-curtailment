@@ -92,6 +92,7 @@ def fetch_and_load_data(
         logger.info(f"Pushing to postgres, {len(df)} rows")
         try:
             write_data(df=df)
+            logger.info('Pushing to postgres :done')
         except Exception as e:
             logger.warning("Writing the df failed, but going to carry on anyway")
             logger.error(e)
