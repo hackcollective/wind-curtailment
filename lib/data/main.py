@@ -40,10 +40,6 @@ def fetch_and_load_data(
 
     wind_units = df_bm_units[df_bm_units["FUEL TYPE"] == "WIND"]["SETT_BMU_ID"].unique()
 
-    # initialize database
-    drop_and_initialize_tables(db_url)
-    drop_and_initialize_bod_table(db_url)
-
     logger.info("Fetching data from ELEXON")
 
     start_chunk = start
@@ -56,6 +52,10 @@ def fetch_and_load_data(
         # make new SQL database
         db_url = f"phys_data_{start_chunk}_{end_chunk}.db"
         engine = create_engine(f"sqlite:///{db_url}", echo=False)
+
+        # initialize database
+        drop_and_initialize_tables(db_url)
+        drop_and_initialize_bod_table(db_url)
 
         # get BOAs and BODs
         run_boa(
