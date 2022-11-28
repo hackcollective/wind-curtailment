@@ -20,6 +20,7 @@ def fetch_and_load_data(
     end: Optional[str] = None,
     chunk_size_minutes: int = 60,
     multiprocess: bool = True,
+    pull_data_once: bool = True,
 ):
     """
     Entrypoint for the scheduled data refresh. Fetches data from Elexon and pushes
@@ -66,6 +67,7 @@ def fetch_and_load_data(
             database_engine=engine,
             cache=False,
             multiprocess=multiprocess,
+            pull_data_once=pull_data_once
         )
         run_bod(
             start_date=start_chunk,
@@ -74,7 +76,8 @@ def fetch_and_load_data(
             chunk_size_in_days=chunk_size_minutes / 24 / 60,
             database_engine=engine,
             cache=False,
-            multiprocess=multiprocess
+            multiprocess=multiprocess,
+            pull_data_once=pull_data_once
         )
 
         logger.info("Running analysis")
