@@ -93,8 +93,8 @@ def fetch_and_load_data(
         try:
             write_data(df=df)
         except Exception as e:
-            logger.warning("Writing the df failed")
-            raise e
+            logger.warning("Writing the df failed, but going to carry on anyway")
+            logger.error(e)
 
         # bump up the start_chunk by 30 minutes
         start_chunk = start_chunk + pd.Timedelta(f"{chunk_size_minutes}T")
