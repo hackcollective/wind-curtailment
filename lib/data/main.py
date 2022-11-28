@@ -19,7 +19,7 @@ def fetch_and_load_data(
     start: Optional[str] = None,
     end: Optional[str] = None,
     chunk_size_minutes: int = 60*24,
-    multiprocess: bool = False,
+    multiprocess: bool = True,
 ):
     """
     Entrypoint for the scheduled data refresh. Fetches data from Elexon and pushes
