@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 def fetch_and_load_data(
     start: Optional[str] = None,
     end: Optional[str] = None,
-    chunk_size_minutes: int = 30,
+    chunk_size_minutes: int = 60*24,
     multiprocess: bool = False,
 ):
     """

@@ -41,7 +41,13 @@ def fetch_physical_data(
             with Pool(len(unit_ids)) as p:
                 unit_dfs = p.starmap(call_api, kwargs)
         else:
-            unit_dfs = [call_api(start_date, end_date, unit) for unit in unit_ids]
+            unit_dfs = []
+            for i, unit in enumerate(unit_ids):
+                logger.info(
+                    f"Calling API PHYBMDATA for {unit} ({i}/{len(unit_ids)}) "
+                    f"{start_date=} {end_date=}"
+                )
+                unit_dfs.append(call_api(start_date, end_date, unit))
 
         df = pd.concat(unit_dfs)
     else:
@@ -69,7 +75,13 @@ def fetch_bod_data(
             with Pool(len(unit_ids)) as p:
                 unit_dfs = p.starmap(call_api_bod, kwargs)
         else:
-            unit_dfs = [call_api_bod(start_date, end_date, unit) for unit in unit_ids]
+            unit_dfs = []
+            for i, unit in enumerate(unit_ids):
+                logger.info(
+                    f"Calling API BOD for {unit} ({i}/{len(unit_ids)}) "
+                    f"{start_date=} {end_date=}"
+                )
+                unit_dfs.append(call_api_bod(start_date, end_date, unit))
         df = pd.concat(unit_dfs)
     else:
         df = client.get_BOD(start_date=start_date, end_date=end_date)
