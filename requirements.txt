@@ -21,3 +21,7 @@ xlrd
 
 fastapi
 uvicorn
+
+
+# test
+pytest
