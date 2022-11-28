@@ -14,12 +14,23 @@ logger = logging.getLogger(__name__)
 @click.command()
 @click.option("--start", default=None)
 @click.option("--end", default=None)
-def main(start: Optional[str] = None, end: Optional[str] = None):
+@click.option("--chunk_size_minutes", default=24 * 60)
+def main(
+    start: Optional[str] = None,
+    end: Optional[str] = None,
+    chunk_size_minutes: Optional[int] = 24 * 60,
+):
 
-    logger.info('Running ETL service, data is pulled now and at 04:00')
+    logger.info(f"Running ETL service, data is pulled now and at 04:00 {start=} {end=} {chunk_size_minutes=}")
 
     def job():
-        fetch_and_load_data(start=start, end=end, chunk_size_minutes=24*60,multiprocess=True)
+        fetch_and_load_data(
+            start=start,
+            end=end,
+            chunk_size_minutes=chunk_size_minutes,
+            multiprocess=True,
+            pull_data_once=False,
+        )
 
     # run job now
     job()
