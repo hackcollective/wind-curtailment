@@ -1,0 +1,22 @@
+name: Docker Test
+
+on: [push]
+
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Build docker image
+      run: |
+        cp env/.env.local .env
+        docker-compose build
+
+    - name: Tests
+      run: |
+        docker-compose run test

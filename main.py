@@ -68,8 +68,8 @@ daily_df = filtered_df[filtered_df['time'].dt.date == option_day]
 daily_df = daily_df.groupby('time').sum()
 daily_df['time'] = daily_df.index
 
-daily_curtailment_gwh = monthly_df['delta_mw'].sum() / 10**3 *0.5
-daily_curtailment_kgbp = monthly_df['cost_gbp'].sum() / 10**6
+daily_curtailment_gwh = daily_df['delta_mw'].sum() / 10**3 *0.5
+daily_curtailment_kgbp = daily_df['cost_gbp'].sum() / 10**6
 st.write(f'Wind Curtailment {daily_curtailment_gwh:.2f} GWh: £ {daily_curtailment_kgbp:.2f} M')
 
 fig = make_time_series_plot(daily_df.copy(), title=f'Wind Curtailment for {option_day}')

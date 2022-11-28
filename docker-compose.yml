@@ -30,4 +30,16 @@ services:
       - .env
     entrypoint:  uvicorn etl:app --reload --host "0.0.0.0"
 
+  test:
+    build:
+      dockerfile: ./Dockerfile
+      context: .
+      target: test
+    container_name: wind-curtailment-test
+    volumes:
+      - ./lib:/src/lib
+      - ./scripts:/src/scripts
+      - ./data:/src/data
+    env_file:
+      - .env
 
