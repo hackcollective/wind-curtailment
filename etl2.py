@@ -16,6 +16,8 @@ logger = logging.getLogger(__name__)
 @click.option("--end", default=None)
 def main(start: Optional[str] = None, end: Optional[str] = None):
 
+    logger.info('Running ETL service, data is pulled now and at 04:00')
+
     def job():
         fetch_and_load_data(start=start, end=end, chunk_size_minutes=24*60,multiprocess=True)
 
