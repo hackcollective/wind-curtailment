@@ -3,6 +3,7 @@ import os
 from multiprocessing.pool import Pool
 from pathlib import Path
 import multiprocessing
+import concurrent.futures
 
 import pandas as pd
 from ElexonDataPortal import api
@@ -41,9 +42,15 @@ def fetch_physical_data(
 
     if unit_ids is not None:
         if multiprocess:
-            kwargs = [(start_date, end_date, unit) for unit in unit_ids]
-            with Pool(int(os.getenv('N_POOL_INSTANCES',N_POOL_INSTANCES))) as p:
-                unit_dfs = p.starmap(call_api, kwargs)
+            unit_dfs = []
+            with concurrent.futures.ThreadPoolExecutor(max_workers=int(os.getenv('N_POOL_INSTANCES',N_POOL_INSTANCES))) as executor:
+
+                tasks = [executor.submit(call_api, start_date,end_date, unit) for unit in unit_ids]
+
+                for future in concurrent.futures.as_completed(tasks):
+                    data = future.result()
+                    unit_dfs.append(data)
+
         else:
             unit_dfs = []
             for i, unit in enumerate(unit_ids):
@@ -75,9 +82,17 @@ def fetch_bod_data(
 
     if unit_ids is not None:
         if multiprocess:
-            kwargs = [(start_date, end_date, unit) for unit in unit_ids]
-            with Pool(int(os.getenv('N_POOL_INSTANCES',N_POOL_INSTANCES))) as p:
-                unit_dfs = p.starmap(call_api_bod, kwargs)
+
+            unit_dfs = []
+            with concurrent.futures.ThreadPoolExecutor(
+                    max_workers=int(os.getenv('N_POOL_INSTANCES', N_POOL_INSTANCES))) as executor:
+
+                tasks = [executor.submit(call_api_bod, start_date, end_date, unit) for unit in unit_ids]
+
+                for future in concurrent.futures.as_completed(tasks):
+                    data = future.result()
+                    unit_dfs.append(data)
+
         else:
             unit_dfs = []
             for i, unit in enumerate(unit_ids):
