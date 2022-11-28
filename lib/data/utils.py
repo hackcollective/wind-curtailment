@@ -38,7 +38,7 @@ def fetch_physical_data(
     if unit_ids is not None:
         if multiprocess:
             kwargs = [(start_date, end_date, unit) for unit in unit_ids]
-            with Pool(len(unit_ids)) as p:
+            with Pool(10) as p:
                 unit_dfs = p.starmap(call_api, kwargs)
         else:
             unit_dfs = []
@@ -72,7 +72,7 @@ def fetch_bod_data(
     if unit_ids is not None:
         if multiprocess:
             kwargs = [(start_date, end_date, unit) for unit in unit_ids]
-            with Pool(len(unit_ids)) as p:
+            with Pool(10) as p:
                 unit_dfs = p.starmap(call_api_bod, kwargs)
         else:
             unit_dfs = []
