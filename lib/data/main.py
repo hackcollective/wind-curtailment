@@ -15,7 +15,12 @@ from lib.gcp_db_utils import load_data, write_data
 logger = logging.getLogger(__name__)
 
 
-def fetch_and_load_data(start: Optional[str] = None, end: Optional[str] = None):
+def fetch_and_load_data(
+    start: Optional[str] = None,
+    end: Optional[str] = None,
+    chunk_size_minutes: int = 30,
+    multiprocess: bool = False,
+):
     """
     Entrypoint for the scheduled data refresh. Fetches data from Elexon and pushes
     to the postgres instance.
@@ -46,29 +51,30 @@ def fetch_and_load_data(start: Optional[str] = None, end: Optional[str] = None):
     logger.info("Fetching data from ELEXON")
 
     start_chunk = start
-    end_chunk = start_chunk + pd.Timedelta('30T')
+    end_chunk = start_chunk + pd.Timedelta(f"{chunk_size_minutes}T")
     # loop over 30 minutes chunks of data
     while end_chunk <= end:
 
-        end_chunk = start_chunk + pd.Timedelta('30T')
+        end_chunk = start_chunk + pd.Timedelta(f"{chunk_size_minutes}T")
 
         # get BOAs and BODs
-        # TODO remove chunk size here as we are only get 30 minutes of data
         run_boa(
             start_date=start_chunk,
             end_date=end_chunk,
             units=wind_units,
-            chunk_size_in_days=1,
+            chunk_size_in_days=chunk_size_minutes / 24 / 60,
             database_engine=engine,
-            cache=False
+            cache=False,
+            multiprocess=multiprocess,
         )
         run_bod(
             start_date=start_chunk,
             end_date=end_chunk,
             units=wind_units,
-            chunk_size_in_days=1,
+            chunk_size_in_days=chunk_size_minutes / 24 / 60,
             database_engine=engine,
-            cache=False
+            cache=False,
+            multiprocess=multiprocess
         )
 
         logger.info("Running analysis")
@@ -88,6 +94,4 @@ def fetch_and_load_data(start: Optional[str] = None, end: Optional[str] = None):
             raise e
 
         # bump up the start_chunk by 30 minutes
-        start_chunk = start_chunk + pd.Timedelta('30T')
-
-
+        start_chunk = start_chunk + pd.Timedelta(f"{chunk_size_minutes}T")

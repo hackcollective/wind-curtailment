@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 @click.option("--start", default=None)
 @click.option("--end", default=None)
 def main(start: Optional[str] = None, end: Optional[str] = None):
-    fetch_and_load_data(start=start, end=end)
+    fetch_and_load_data(start=start, end=end, chunk_size_minutes=24*60,multiprocess=True)
 
 
 if __name__ == "__main__":
