@@ -9,6 +9,7 @@ API_KEY = "xutthojn7xa28q6"
 
 client = api.Client(API_KEY)
 MINUTES_TO_HOURS = 1 / 60
+N_POOL_INSTANCES = 20
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +39,7 @@ def fetch_physical_data(
     if unit_ids is not None:
         if multiprocess:
             kwargs = [(start_date, end_date, unit) for unit in unit_ids]
-            with Pool(10) as p:
+            with Pool(N_POOL_INSTANCES) as p:
                 unit_dfs = p.starmap(call_api, kwargs)
         else:
             unit_dfs = []
@@ -72,7 +73,7 @@ def fetch_bod_data(
     if unit_ids is not None:
         if multiprocess:
             kwargs = [(start_date, end_date, unit) for unit in unit_ids]
-            with Pool(10) as p:
+            with Pool(N_POOL_INSTANCES) as p:
                 unit_dfs = p.starmap(call_api_bod, kwargs)
         else:
             unit_dfs = []
