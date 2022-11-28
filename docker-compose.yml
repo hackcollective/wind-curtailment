@@ -42,8 +42,4 @@ services:
       - ./data:/src/data
     env_file:
       - .env
-    command: >
-      bash -c "ls .
-      && echo $PYTHONPATH
-      && pytest"
 

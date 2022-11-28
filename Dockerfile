@@ -30,7 +30,8 @@ RUN export PYTHONPATH=${PYTHONPATH}:/lib
 
 # make test app
 FROM base as test
-RUN export PYTHONPATH=${PYTHONPATH}:/lib
+ENV PYTHONPATH=${PYTHONPATH}:/lib
+CMD pytest
 
 # make streamlit app
 FROM base as app
