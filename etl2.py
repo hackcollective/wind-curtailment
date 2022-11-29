@@ -41,7 +41,7 @@ def main(
     job()
 
     # run job every hour at 15 mins past
-    logger.info('Adding job at 15 pas the hour every morning')
+    logger.info('Adding job at 15 past the hour every hour')
     schedule.every().hour.at(":15").do(job)
 
     while True:
