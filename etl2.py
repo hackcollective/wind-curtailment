@@ -40,6 +40,7 @@ def main(
     job()
 
     # run job at 04:00 every day
+    logger.info('Adding job at 04:00 every morning')
     schedule.every().day.at("04:00").do(job)
 
     while True:
