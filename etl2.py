@@ -35,12 +35,13 @@ def main(
         except Exception as e:
             logger.info("There was an error running 'fetch_and_load_data'")
             logger.warning(e)
+            raise e
 
     # run job now
     job()
 
-    # run job eveyr hour at 15 mins past
-    logger.info('Adding job at 04:00 every morning')
+    # run job every hour at 15 mins past
+    logger.info('Adding job at 15 pas the hour every morning')
     schedule.every().hour.at(":15").do(job)
 
     while True:
