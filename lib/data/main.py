@@ -47,6 +47,10 @@ def fetch_and_load_data(
     # loop over 30 minutes chunks of data
     while end_chunk <= end:
 
+        logger.info(
+            f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
+        )
+
         end_chunk = start_chunk + pd.Timedelta(f"{chunk_size_minutes}T")
         logger.info(f'Running chunk from {start_chunk=} to {end_chunk=}')
 

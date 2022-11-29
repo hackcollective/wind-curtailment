@@ -21,6 +21,7 @@ xlrd
 schedule
 fastapi
 uvicorn
+psutil
 
 
 # test
