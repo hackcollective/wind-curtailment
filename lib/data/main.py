@@ -32,11 +32,14 @@ def fetch_and_load_data(
     Writes a CSV as intermediate step
     """
 
-    # get yesterdays date
+    # get a 1 hour chunk date
     if (start is None) or (end is None):
-        now = datetime.now(tz=timezone.utc)
-        end = now.date()
-        start = end - timedelta(days=1)
+        end = datetime.now(tz=timezone.utc)
+        end = end - timedelta(hours=2)
+        end = end.replace(minute=0)
+        end = end.replace(second=0)
+        end = end.replace(microsecond=0)
+        start = end - timedelta(hours=1)
 
     start = pd.Timestamp(start)
     end = pd.Timestamp(end)

@@ -39,9 +39,9 @@ def main(
     # run job now
     job()
 
-    # run job at 04:00 every day
+    # run job eveyr hour at 15 mins past
     logger.info('Adding job at 04:00 every morning')
-    schedule.every().day.at("04:00").do(job)
+    schedule.every().hour.at(":15").do(job)
 
     while True:
         schedule.run_pending()
