@@ -23,6 +23,9 @@ def resolve_applied_bid_offer_level(df_linear: pd.DataFrame):
     We need to upsample the data first to achieve this.
     """
 
+    if len(df_linear) == 0:
+        return df_linear
+
     out = []
 
     for accept_id, data in df_linear.groupby("Accept ID"):
@@ -55,6 +58,9 @@ def linearize_physical_data(df: pd.DataFrame):
         df = pd.DataFrame(df).T
 
     base_columns = [x for x in df.columns.copy() if x not in from_columns + to_columns]
+
+    if len(df) == 0:
+        return pd.DataFrame(columns = base_columns + ['Level','Time'])
 
     df = pd.concat(
         (
@@ -120,7 +126,6 @@ def analyze_one_unit(
 
     # resolve boa data
     unit_boal_resolved = resolve_applied_bid_offer_level(df_boal_linear)
-    unit_boal_resolved.head()
 
     if type(df_fpn_unit) == pd.Series:
         df_fpn_unit = pd.DataFrame(df_fpn_unit).T
@@ -157,6 +162,14 @@ def analyze_one_unit(
         df_merged["energy_mwh"] = df_merged["delta"] * 0.5
         df_merged["cost_gbp"] = -df_merged["bidPrice"] * df_merged["energy_mwh"]
 
+    assert "cost_gbp" in df_merged.columns
+    assert "energy_mwh" in df_merged.columns
+    assert "delta" in df_merged.columns
+    assert "local_datetime" in df_merged.columns
+    assert "Level_After_BOAL" in df_merged.columns
+    assert "Level_BOAL" in df_merged.columns
+    assert "Level_FPN" in df_merged.columns
+
     return df_merged
 
 
@@ -164,14 +177,41 @@ def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
     """Produces a dataframe characterizing curtailment between `start_time` and `end_time`"""
 
     df_fpn, df_boal, df_bod = db.get_data_for_time_range(start_time=start_time, end_time=end_time)
+
     curtailment_dfs = []
-    units = df_boal.index.unique()
+    # get unique names from bods
+    units_fpn = df_fpn.index.unique()
+    units_boa = df_boal.index.unique()
+    units_bod = df_bod.index.unique()
+
+    units = sorted(set(list(units_fpn) + list(units_boa) + list(units_bod)))
+    logger.debug(f'Looking at {len(units)} units')
 
     for i, unit in enumerate(units):
+        logger.debug(f'Analyzing {unit} ({i}/{len(units)})')
+
+        if unit in units_boa:
+            df_boal_unit = df_boal.loc[unit]
+        else:
+            logger.debug(f'No BOAs for {unit}, so making empty data')
+            df_boal_unit = pd.DataFrame(columns=df_boal.columns)
+
+        if unit in units_fpn:
+            df_fpn_unit = df_fpn.loc[unit]
+        else:
+            logger.debug(f'No FPN for {unit}, so making empty data')
+            df_fpn_unit = pd.DataFrame(columns=df_fpn.columns)
+
+        if unit in units_bod:
+            df_bod_unit = df_bod.loc[unit]
+        else:
+            logger.debug(f'No BODS for {unit}, so making empty data')
+            df_bod_unit = pd.DataFrame(columns=df_bod.columns)
+
         df_curtailment_unit = analyze_one_unit(
-            df_boal_unit=df_boal.loc[unit],
-            df_fpn_unit=df_fpn.loc[unit],
-            df_bod_unit=df_bod.loc[unit],
+            df_boal_unit=df_boal_unit,
+            df_fpn_unit=df_fpn_unit,
+            df_bod_unit=df_bod_unit,
         )
 
         curtailment_in_mwh = calculate_curtailment_in_mwh(df_curtailment_unit)
@@ -191,4 +231,22 @@ def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
     total_curtailment = df_curtailment["delta"].sum() * MINUTES_TO_HOURS
     logger.debug(f"Total curtailment was {total_curtailment:.2f} MWh ")
 
-    return df_curtailment.reset_index().groupby(["local_datetime"]).sum().reset_index()
+    # this sometimes happens when there are no baos
+    df_curtailment['Level_BOAL'] = df_curtailment['Level_BOAL'].fillna(0.0)
+
+    # group and sum by time
+    df_curtailment = df_curtailment.reset_index()
+    df_curtailment = df_curtailment.groupby(["local_datetime"]).sum()
+    df_curtailment = df_curtailment.reset_index()
+
+    logger.debug(df_curtailment)
+
+    assert "cost_gbp" in df_curtailment.columns
+    assert "energy_mwh" in df_curtailment.columns
+    assert "delta" in df_curtailment.columns
+    assert "local_datetime" in df_curtailment.columns
+    assert "Level_After_BOAL" in df_curtailment.columns
+    assert "Level_BOAL" in df_curtailment.columns
+    assert "Level_FPN" in df_curtailment.columns
+
+    return df_curtailment
