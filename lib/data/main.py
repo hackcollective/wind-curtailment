@@ -2,6 +2,9 @@ import logging
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 
+import os
+import psutil
+
 import pandas as pd
 from sqlalchemy import create_engine
 
