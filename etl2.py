@@ -33,6 +33,7 @@ def main(
                 pull_data_once=True,
             )
         except Exception as e:
+            logger.info("There was an error running 'fetch_and_load_data'")
             logger.warning(e)
 
     # run job now
