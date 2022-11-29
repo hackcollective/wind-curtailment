@@ -21,7 +21,8 @@ def main(
     chunk_size_minutes: Optional[int] = 24 * 60,
 ):
 
-    logger.info(f"Running ETL service, data is pulled now and at 04:00 {start=} {end=} {chunk_size_minutes=}")
+    logger.info(f"Running ETL service, data is pulled now and every hour at 15 minutes pass "
+                f"{start=} {end=} {chunk_size_minutes=}")
 
     def job():
         try:
