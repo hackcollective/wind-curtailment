@@ -59,11 +59,7 @@ class DbRepository:
         raw_query = lambda x: f"select * from {x} " \
                               f" where local_datetime < '{end_time}' " \
                               f" and local_datetime >= '{start_time}' "
-        # Need to include BOA like from start tim 03:00 to 04:00
-        # 1. 02:58 to 03:03
-        # 2. 03:58 to 04:03
-        # 3. 03:02 to 03:03
-        # 4. 02:58 to 04:03
+
         logger.debug(f'{start_time=}')
         logger.debug(f'{end_time=}')
 
@@ -72,7 +68,6 @@ class DbRepository:
             df_fpn = pd.read_sql(
                 raw_query("fpn"),
                 conn,
-                # params=start_time,
                 index_col="unit",
                 parse_dates=["timeFrom", "timeTo"],
             )
@@ -80,7 +75,6 @@ class DbRepository:
             df_boal = pd.read_sql(
                 raw_query("boal"),
                 conn,
-                # params=start_time,
                 index_col="unit",
                 parse_dates=["timeFrom", "timeTo"],
             )
@@ -88,7 +82,6 @@ class DbRepository:
             df_bod = pd.read_sql(
                 raw_query("bod"),
                 conn,
-                # params=start_time,
                 index_col="bmUnitID",
                 parse_dates=["timeFrom", "timeTo"],
             )
