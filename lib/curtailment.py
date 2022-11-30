@@ -141,6 +141,9 @@ def analyze_one_unit(
     )
     unit_fpn_resolved["Notification Type"] = "FPN"
 
+    # remove last time valye as we dont want to incluce the first minute in the next 30 mins
+    unit_fpn_resolved = unit_fpn_resolved.iloc[:-1]
+
     # We merge BOAL to FPN, so all FPN data is preserved. We want to include
     # units with an FPN but not BOAL
     df_merged = unit_fpn_resolved.join(unit_boal_resolved["Level"], lsuffix="_FPN", rsuffix="_BOAL")
