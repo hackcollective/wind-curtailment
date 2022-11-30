@@ -19,7 +19,6 @@ COPY ./tests /src/tests
 
 COPY main.py /src/main.py
 COPY etl.py /src/etl.py
-COPY etl2.py /src/etl2.py
 
 WORKDIR /src
 
