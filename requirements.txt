@@ -18,7 +18,6 @@ xlrd
 
 
 # etl
-schedule
 fastapi
 uvicorn
 psutil
