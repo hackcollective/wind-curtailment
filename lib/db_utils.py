@@ -96,10 +96,6 @@ class DbRepository:
             logger.info(f'Found {len(df_boal)} BOAs')
             logger.info(f'Found {len(df_bod)} BODs')
 
-            logger.info(f'Found {(df_fpn["timeFrom"])} FPNs')
-            logger.info(f'Found {(df_boal["timeFrom"])} BOAs')
-            logger.info(f'Found {(df_bod["timeFrom"])} BODs')
-
         return df_fpn, df_boal, df_bod
 
 
