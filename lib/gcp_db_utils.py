@@ -73,7 +73,5 @@ def load_data(path: Path) -> pd.DataFrame:
             "delta": "delta_mw",
         }
     )
-
-    df['time'] = df['local_datetime']
     return df[columns]
 

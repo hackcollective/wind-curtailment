@@ -18,9 +18,9 @@ from lib.data.utils import *
 
 
 def test_analyze_one_unit():
-    df_fpn = pd.read_parquet("tests/data/fpn.parquet")
-    df_boal = pd.read_parquet("tests/data/boal.parquet")
-    df_bod = pd.read_parquet("tests/data/bod.parquet")
+    df_fpn = pd.read_parquet("tests/test_data/fpn.parquet")
+    df_boal = pd.read_parquet("tests/test_data/boal.parquet")
+    df_bod = pd.read_parquet("tests/test_data/bod.parquet")
 
     units = df_boal.index.unique()
     unit = units[0]
@@ -31,9 +31,9 @@ def test_analyze_one_unit():
 
 
 def test_calculate_curtailment_costs_in_gbp():
-    df_fpn = pd.read_parquet("tests/data/fpn.parquet")
-    df_boal = pd.read_parquet("tests/data/boal.parquet")
-    df_bod = pd.read_parquet("tests/data/bod.parquet")
+    df_fpn = pd.read_parquet("tests/test_data/fpn.parquet")
+    df_boal = pd.read_parquet("tests/test_data/boal.parquet")
+    df_bod = pd.read_parquet("tests/test_data/bod.parquet")
 
     units = df_boal.index.unique()
     unit = units[0]

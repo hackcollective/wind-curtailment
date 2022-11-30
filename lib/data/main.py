@@ -46,13 +46,12 @@ def fetch_and_load_data(
 
     wind_units = df_bm_units[df_bm_units["FUEL TYPE"] == "WIND"]["SETT_BMU_ID"].unique()
 
-    logger.info("Fetching data from ELEXON")
+    logger.info(f"Fetching data from ELEXON {start} {end}")
 
     start_chunk = start
     end_chunk = start_chunk + pd.Timedelta(f"{chunk_size_minutes}T")
     # loop over 30 minutes chunks of data
     while end_chunk <= end:
-
         logger.info(
             f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
         )
@@ -75,7 +74,7 @@ def fetch_and_load_data(
             units=wind_units,
             chunk_size_in_days=chunk_size_minutes / 24 / 60,
             database_engine=engine,
-            cache=False,
+            cache=True,
             multiprocess=multiprocess,
             pull_data_once=pull_data_once
         )
@@ -85,7 +84,7 @@ def fetch_and_load_data(
             units=wind_units,
             chunk_size_in_days=chunk_size_minutes / 24 / 60,
             database_engine=engine,
-            cache=False,
+            cache=True,
             multiprocess=multiprocess,
             pull_data_once=pull_data_once
         )
@@ -93,6 +92,9 @@ def fetch_and_load_data(
         logger.info("Running analysis")
         db = DbRepository(db_url)
         df = analyze_curtailment(db, str(start_chunk), str(end_chunk))
+
+        # horrible fix
+        df = df.iloc[:-1]
 
         df.to_csv(f"./data/outputs/results-{start_chunk}-{end_chunk}.csv")
 
@@ -109,3 +111,5 @@ def fetch_and_load_data(
 
         # bump up the start_chunk by 30 minutes
         start_chunk = start_chunk + pd.Timedelta(f"{chunk_size_minutes}T")
+
+    return df

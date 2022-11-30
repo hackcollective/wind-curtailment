@@ -120,15 +120,21 @@ def analyze_one_unit(
 ) -> pd.DataFrame:
     """Product a dataframe of actual (curtailed) vs. proposed generation"""
 
+    if isinstance(df_boal_unit, pd.Series):
+        df_boal_unit = pd.DataFrame(df_boal_unit).T
+
+    if type(df_fpn_unit) == pd.Series:
+        df_fpn_unit = pd.DataFrame(df_fpn_unit).T
+
+    logger.debug(f'Analyzing one unit for {len(df_boal_unit)} BOA, '
+                 f'{len(df_fpn_unit)} FPN and {len(df_bod_unit)} BOD')
+
     # Make time linear
     df_boal_linear = linearize_physical_data(df_boal_unit)
     df_boal_linear["Accept Time str"] = df_boal_linear["Accept Time"].astype(str)
 
     # resolve boa data
     unit_boal_resolved = resolve_applied_bid_offer_level(df_boal_linear)
-
-    if type(df_fpn_unit) == pd.Series:
-        df_fpn_unit = pd.DataFrame(df_fpn_unit).T
 
     unit_fpn_resolved = (
         linearize_physical_data(df_fpn_unit).set_index("Time").resample("T").mean().interpolate()
@@ -146,26 +152,26 @@ def analyze_one_unit(
     # unsure if we should take '1' or '-1'. they seemd to have the same 'bidPrice'
     if df_bod_unit is not None:
         df_bod_unit.reset_index(inplace=True)
-        df_bod_unit['bidOfferPairNumber'] = df_bod_unit['bidOfferPairNumber'].astype(float)
+        df_bod_unit.loc[:,'bidOfferPairNumber'] = df_bod_unit['bidOfferPairNumber'].astype(float)
         mask = df_bod_unit['bidOfferPairNumber'] == -1.0
         df_bod_unit = df_bod_unit.loc[mask]
-        df_bod_unit["bidPrice"] = df_bod_unit["bidPrice"].astype(float)
+        df_bod_unit.loc[:,"bidPrice"] = df_bod_unit["bidPrice"].astype(float)
 
         # put bid Price into returned dat
-        df_merged["local_datetime"] = pd.to_datetime(df_merged.index)
-        df_bod_unit["local_datetime"] = pd.to_datetime(df_bod_unit["local_datetime"])
+        df_bod_unit.loc[:,"Time"] = pd.to_datetime(df_bod_unit.loc[:,"timeFrom"])
+
         df_merged = df_merged.merge(
-            df_bod_unit[["bidPrice", "local_datetime"]], on=["local_datetime"]
+            df_bod_unit[["bidPrice", "Time"]], on=["Time"], how='outer'
         )
+        df_merged['bidPrice'].ffill(inplace=True)
 
         # bid price is negative
-        df_merged["energy_mwh"] = df_merged["delta"] * 0.5
+        df_merged["energy_mwh"] = df_merged["delta"] * 1/60
         df_merged["cost_gbp"] = -df_merged["bidPrice"] * df_merged["energy_mwh"]
 
     assert "cost_gbp" in df_merged.columns
     assert "energy_mwh" in df_merged.columns
     assert "delta" in df_merged.columns
-    assert "local_datetime" in df_merged.columns
     assert "Level_After_BOAL" in df_merged.columns
     assert "Level_BOAL" in df_merged.columns
     assert "Level_FPN" in df_merged.columns
@@ -234,17 +240,21 @@ def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
     # this sometimes happens when there are no baos
     df_curtailment['Level_BOAL'] = df_curtailment['Level_BOAL'].fillna(0.0)
 
-    # group and sum by time
+    # group and sum by time (in 30 mins chunks)
     df_curtailment = df_curtailment.reset_index()
-    df_curtailment = df_curtailment.groupby(["local_datetime"]).sum()
+    df_curtailment['Time'] = pd.to_datetime(df_curtailment['Time']).dt.floor('30T')
+    df_curtailment = df_curtailment.groupby(["Time"]).sum()
     df_curtailment = df_curtailment.reset_index()
 
-    logger.debug(df_curtailment)
+    # delta is in MW, so if we sum in each 30 minutes, we to /30 to get the average
+    df_curtailment['delta'] = df_curtailment['delta'] / 30
+    df_curtailment['Level_After_BOAL'] = df_curtailment['Level_After_BOAL'] / 30
+    df_curtailment['Level_BOAL'] = df_curtailment['Level_BOAL'] / 30
+    df_curtailment['Level_FPN'] = df_curtailment['Level_FPN'] / 30
 
     assert "cost_gbp" in df_curtailment.columns
     assert "energy_mwh" in df_curtailment.columns
     assert "delta" in df_curtailment.columns
-    assert "local_datetime" in df_curtailment.columns
     assert "Level_After_BOAL" in df_curtailment.columns
     assert "Level_BOAL" in df_curtailment.columns
     assert "Level_FPN" in df_curtailment.columns
