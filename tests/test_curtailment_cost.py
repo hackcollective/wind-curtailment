@@ -43,4 +43,4 @@ def test_calculate_curtailment_costs_in_gbp():
     )
 
     costs = calculate_curtailment_costs_in_gbp(df_curtailment_unit)
-    assert costs == 15262.5
+    assert costs == 447971.25
