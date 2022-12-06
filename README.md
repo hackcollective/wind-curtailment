@@ -28,3 +28,7 @@ Prototype is in `notebooks/bidoffer.ipynb`.
 Might need to run
 `export PYTHONPATH=${PYTHONPATH}:/lib`
 to get the lib in to your python path
+
+## APP
+simple streamlit app can be run using
+`streamlit run main.py`

@@ -1,5 +1,6 @@
 import pandas as pd
 import streamlit as st
+from datetime import datetime
 
 from lib.curtailment import MINUTES_TO_HOURS
 from lib.gcp_db_utils import read_data
@@ -10,16 +11,18 @@ from lib.plot import make_time_series_plot
 def filter_data(df, start_date, end_date):
     return df[(df["time"] >= pd.to_datetime(start_date)) & (df["time"] <= pd.to_datetime(end_date))]
 
+MIN_DATE = pd.to_datetime("2022-01-01")
+MAX_DATE = pd.to_datetime("2023-01-01")
+INITIAL_END_DATE = pd.to_datetime("2023-01-01")
+
+st.title("UK Wind Curtailment")
+now = datetime.now()
 
 df = read_data()
+
 if 'cost_gbp' not in df.columns:
     df['cost_gbp'] = 99.99999
 
-MIN_DATE = pd.to_datetime("2022-01-01")
-MAX_DATE = pd.to_datetime("2022-12-01")
-INITIAL_END_DATE = pd.to_datetime("2022-12-01")
-
-st.title("UK Wind Curtailment")
 start_date = st.date_input("Start Time", min_value=MIN_DATE, max_value=MAX_DATE, value=MIN_DATE)
 end_date = st.date_input("End Time", min_value=MIN_DATE, max_value=MAX_DATE, value=INITIAL_END_DATE)
 filtered_df = filter_data(df.copy(), start_date, end_date)
@@ -27,9 +30,17 @@ filtered_df = filter_data(df.copy(), start_date, end_date)
 total_curtailment = filtered_df["delta_mw"].sum() * MINUTES_TO_HOURS
 
 year_df = filtered_df.copy()
-year_df['time'] = filtered_df['time'].dt.month_name()
-year_df = year_df.groupby('time').sum()
+
+year_df['month_idx'] = year_df['time'].dt.month
+year_df['time'] = year_df['time'].dt.month_name()
+year_df_sum = year_df.groupby('time').sum()
+year_df_mean = year_df.groupby('time').mean()
+
+year_df = year_df_sum
 year_df['time'] = year_df.index
+# sort
+year_df['month_idx'] = year_df_mean['month_idx']
+year_df = year_df.sort_values(by=['month_idx'])
 
 yearly_curtailment_twh = year_df['delta_mw'].sum() / 10**6 * 0.5
 yearly_curtailment_mgbp = year_df['cost_gbp'].sum() / 10**6
