@@ -18,9 +18,9 @@ xlrd
 
 
 # etl
-
 fastapi
 uvicorn
+psutil
 
 
 # test

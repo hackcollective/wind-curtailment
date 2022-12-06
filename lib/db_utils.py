@@ -49,33 +49,42 @@ class DbRepository:
     def get_data_for_time_range(
         self, start_time: str, end_time: str
     ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+        start_time = pd.to_datetime(start_time) - pd.Timedelta(seconds=1)
+        start_time = str(start_time)
+
+        end_time = pd.to_datetime(end_time) + pd.Timedelta(seconds=1)
+        end_time = str(end_time)
+
         # Cannot set table name as an SQL param:https://stackoverflow.com/questions/46736633/syntax-error-with-python3-and-sqlite3-when-using-parameters
-        raw_query = lambda x: f"select * from {x} where timeFrom BETWEEN ? AND ?"
+        raw_query = lambda x: f"select * from {x} " \
+                              f" where local_datetime < '{end_time}' " \
+                              f" and local_datetime >= '{start_time}' "
+
+        logger.debug(f'{start_time=}')
+        logger.debug(f'{end_time=}')
 
         with self.engine.connect() as conn:
+            logger.debug(f'Getting FPNs from {start_time} to {end_time}')
             df_fpn = pd.read_sql(
                 raw_query("fpn"),
                 conn,
-                params=(start_time, end_time),
                 index_col="unit",
                 parse_dates=["timeFrom", "timeTo"],
             )
+            logger.debug(f'Getting BOAs from {start_time} to {end_time}')
             df_boal = pd.read_sql(
                 raw_query("boal"),
                 conn,
-                params=(start_time, end_time),
                 index_col="unit",
                 parse_dates=["timeFrom", "timeTo"],
             )
-
+            logger.debug(f'Getting BODs from {start_time} to {end_time}')
             df_bod = pd.read_sql(
                 raw_query("bod"),
                 conn,
-                params=(start_time, end_time),
                 index_col="bmUnitID",
                 parse_dates=["timeFrom", "timeTo"],
             )
-
             logger.info(f'Found {len(df_fpn)} FPNs')
             logger.info(f'Found {len(df_boal)} BOAs')
             logger.info(f'Found {len(df_bod)} BODs')

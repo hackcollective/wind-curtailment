@@ -2,6 +2,9 @@ import logging
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 
+import os
+import psutil
+
 import pandas as pd
 from sqlalchemy import create_engine
 
@@ -29,34 +32,40 @@ def fetch_and_load_data(
     Writes a CSV as intermediate step
     """
 
-    # get yesterdays date
+    # get a 1 hour chunk date
     if (start is None) or (end is None):
-        now = datetime.now(tz=timezone.utc)
-        end = now.date()
-        start = end - timedelta(days=1)
+        end = datetime.now(tz=timezone.utc)
+        end = end - timedelta(hours=2)
+        end = end.replace(minute=0)
+        end = end.replace(second=0)
+        end = end.replace(microsecond=0)
+        start = end - timedelta(hours=1)
 
     start = pd.Timestamp(start)
     end = pd.Timestamp(end)
 
     wind_units = df_bm_units[df_bm_units["FUEL TYPE"] == "WIND"]["SETT_BMU_ID"].unique()
 
-    # make new SQL database
-    db_url = f"phys_data_{start}_{end}.db"
-
-    # initialize database
-    drop_and_initialize_tables(db_url)
-    drop_and_initialize_bod_table(db_url)
-
-    engine = create_engine(f"sqlite:///{db_url}", echo=False)
-
-    logger.info("Fetching data from ELEXON")
+    logger.info(f"Fetching data from ELEXON {start} {end}")
 
     start_chunk = start
     end_chunk = start_chunk + pd.Timedelta(f"{chunk_size_minutes}T")
     # loop over 30 minutes chunks of data
     while end_chunk <= end:
+        logger.info(
+            f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
+        )
 
         end_chunk = start_chunk + pd.Timedelta(f"{chunk_size_minutes}T")
+        logger.info(f'Running chunk from {start_chunk=} to {end_chunk=}')
+
+        # make new SQL database
+        db_url = f"phys_data_{start_chunk}_{end_chunk}.db"
+        engine = create_engine(f"sqlite:///{db_url}", echo=False)
+
+        # initialize database
+        drop_and_initialize_tables(db_url)
+        drop_and_initialize_bod_table(db_url)
 
         # get BOAs and BODs
         run_boa(
@@ -65,7 +74,7 @@ def fetch_and_load_data(
             units=wind_units,
             chunk_size_in_days=chunk_size_minutes / 24 / 60,
             database_engine=engine,
-            cache=False,
+            cache=True,
             multiprocess=multiprocess,
             pull_data_once=pull_data_once
         )
@@ -75,7 +84,7 @@ def fetch_and_load_data(
             units=wind_units,
             chunk_size_in_days=chunk_size_minutes / 24 / 60,
             database_engine=engine,
-            cache=False,
+            cache=True,
             multiprocess=multiprocess,
             pull_data_once=pull_data_once
         )
@@ -92,9 +101,12 @@ def fetch_and_load_data(
         logger.info(f"Pushing to postgres, {len(df)} rows")
         try:
             write_data(df=df)
+            logger.info('Pushing to postgres :done')
         except Exception as e:
-            logger.warning("Writing the df failed")
-            raise e
+            logger.warning("Writing the df failed, but going to carry on anyway")
+            logger.error(e)
 
         # bump up the start_chunk by 30 minutes
         start_chunk = start_chunk + pd.Timedelta(f"{chunk_size_minutes}T")
+
+    return df

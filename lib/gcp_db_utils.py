@@ -25,15 +25,19 @@ def get_db_connection():
 
 
 def write_data(df: pd.DataFrame):
-    engine = get_db_connection()
 
-    if "local_datetime" in df.columns:
-        df = df.rename(columns={"local_datetime": "time"})
+    if len(df) == 0:
+        logger.debug('There was not data to write to the database')
+    else:
 
-    logger.info(f"Adding curtailment to database ({len(df)}")
+        engine = get_db_connection()
+        if "local_datetime" in df.columns:
+            df = df.rename(columns={"local_datetime": "time"})
 
-    with engine.connect() as conn:
-        df.to_sql("curtailment", conn, if_exists="append", index=False)
+        logger.info(f"Adding curtailment to database ({len(df)}")
+
+        with engine.connect() as conn:
+            df.to_sql("curtailment", conn, if_exists="append", index=False)
 
 
 def read_data(start_time="2022-01-01", end_time="2023-01-01"):
@@ -53,6 +57,13 @@ def read_data(start_time="2022-01-01", end_time="2023-01-01"):
 
 def load_data(path: Path) -> pd.DataFrame:
     df = pd.read_csv(path, index_col=0)
+
+    columns = ["time", "level_fpn", "level_boal", "level_after_boal", "delta_mw", "cost_gbp"]
+
+    if len(df) == 0:
+        logger.debug('No data to load')
+        return pd.DataFrame(columns=columns)
+
     df = df.rename(
         columns={
             "Time": "time",
@@ -62,7 +73,5 @@ def load_data(path: Path) -> pd.DataFrame:
             "delta": "delta_mw",
         }
     )
-
-    df['time'] = df['local_datetime']
-    return df[["time", "level_fpn", "level_boal", "level_after_boal", "delta_mw", "cost_gbp"]]
+    return df[columns]
 

@@ -56,7 +56,9 @@ def write_bod_to_db(df_fpn, database_engine) -> bool:
 
     try:
         with database_engine.connect() as connection:
+            logger.debug(f'Writing {len(df_fpn)} to database')
             df_fpn.to_sql("bod", connection, if_exists="append", index_label="bmUnitID")
+            logger.debug(f'Writing to database: Done')
         return True
     except OperationalError as e:
         logger.warning(e)
