@@ -40,8 +40,11 @@ year_df = filtered_df.copy()
 
 year_df["month_idx"] = year_df["time"].dt.month
 year_df["time"] = year_df["time"].dt.month_name()
-year_df = year_df.groupby("time", sort='month_idx').sum()
+year_df_mean = year_df.groupby("time").mean()
+year_df = year_df.groupby("time").sum()
 year_df["time"] = year_df.index
+year_df['month_idx'] = year_df_mean['month_idx']
+year_df = year_df.sort_values(by=['month_idx'])
 
 yearly_curtailment_twh = year_df["delta_mw"].sum() / 10 ** 6 * 0.5
 yearly_curtailment_mgbp = year_df["cost_gbp"].sum() / 10 ** 6
