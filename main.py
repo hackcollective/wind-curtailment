@@ -11,16 +11,24 @@ def filter_data(df, start_date, end_date):
     return df[(df["time"] >= pd.to_datetime(start_date)) & (df["time"] <= pd.to_datetime(end_date))]
 
 
+df = read_data()
+
+if 'cost_gbp' not in df.columns:
+    df['cost_gbp'] = 99.99999
+
+df = df.rename(columns={'level_fpn':'level_fpn_mw',
+                        'level_after_boal':'level_after_boal_mw'})
+
+# go from 30 min mean mw to mwh
+df['level_fpn_mwh'] = df['level_fpn_mw'] * 0.5
+df['level_after_boal_mwh'] = df['level_after_boal_mw'] * 0.5
+
+
 MIN_DATE = pd.to_datetime("2022-01-01")
 MAX_DATE = pd.to_datetime("2023-01-01")
 INITIAL_END_DATE = pd.to_datetime("2023-01-01")
 
 st.title("UK Wind Curtailment")
-
-df = read_data()
-
-if "cost_gbp" not in df.columns:
-    df["cost_gbp"] = 99.99999
 
 start_date = st.date_input("Start Time", min_value=MIN_DATE, max_value=MAX_DATE, value=MIN_DATE)
 end_date = st.date_input("End Time", min_value=MIN_DATE, max_value=MAX_DATE, value=INITIAL_END_DATE)
@@ -32,15 +40,18 @@ year_df = filtered_df.copy()
 
 year_df["month_idx"] = year_df["time"].dt.month
 year_df["time"] = year_df["time"].dt.month_name()
-year_df = year_df.groupby("time", sort='month_idx').sum()
+year_df_mean = year_df.groupby("time").mean()
+year_df = year_df.groupby("time").sum()
 year_df["time"] = year_df.index
+year_df['month_idx'] = year_df_mean['month_idx']
+year_df = year_df.sort_values(by=['month_idx'])
 
 yearly_curtailment_twh = year_df["delta_mw"].sum() / 10 ** 6 * 0.5
 yearly_curtailment_mgbp = year_df["cost_gbp"].sum() / 10 ** 6
 st.write(f"Wind Curtailment {yearly_curtailment_twh:.2f} TWh: £ {yearly_curtailment_mgbp:.2f} M")
 
 # monthly plot
-fig = make_time_series_plot(year_df.copy(), title=f"Wind Curtailment for 2022")
+fig = make_time_series_plot(year_df.copy(), title=f"Wind Curtailment for 2022", mw_or_mwh='mwh')
 st.plotly_chart(fig)
 
 # drop down box for months
@@ -57,7 +68,7 @@ monthly_curtailment_kgbp = monthly_df["cost_gbp"].sum() / 10 ** 6
 st.write(f"Wind Curtailment {monthly_curtailment_gwh:.2f} GWh: £ {monthly_curtailment_kgbp:.2f} M")
 
 # daily plot plot
-fig = make_time_series_plot(monthly_df.copy(), title=f"Wind Curtailment for {option_month}")
+fig = make_time_series_plot(monthly_df.copy(), title=f"Wind Curtailment for {option_month}", mw_or_mwh='mwh')
 st.plotly_chart(fig)
 
 # day drop droplet
