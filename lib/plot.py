@@ -25,7 +25,7 @@ def make_time_series_plot(data_df, title: str = None, mw_or_mwh: str = "mw"):
     # Create figure with secondary y-axis
     fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-    # Add traces
+    # Add traces # TODO add MEGA_TO_GIGA
     fig.add_trace(
         go.Scatter(
             x=data_df["local_datetime"],
