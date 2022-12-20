@@ -55,7 +55,9 @@ fig = make_time_series_plot(year_df.copy(), title=f"Wind Curtailment for 2022", 
 st.plotly_chart(fig)
 
 # drop down box for months
-option_month = st.selectbox("Select a month", list(year_df["time"]))
+option_month = st.selectbox(label="Select a month",
+                            options=list(year_df["time"]),
+                            index=len(year_df)-1)
 
 # get the monthly data
 monthly_df = filtered_df[filtered_df["time"].dt.month_name() == option_month]
@@ -72,7 +74,9 @@ fig = make_time_series_plot(monthly_df.copy(), title=f"Wind Curtailment for {opt
 st.plotly_chart(fig)
 
 # day drop droplet
-option_day = st.selectbox("Select a date", list(monthly_df["time"]))
+option_day = st.selectbox(label="Select a date",
+                          options=list(monthly_df["time"]),
+                          index=len(monthly_df) - 1)
 # get the day data
 
 daily_df = filtered_df[filtered_df["time"].dt.date == option_day]
