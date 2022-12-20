@@ -30,7 +30,7 @@ def make_time_series_plot(data_df, title: str = None, mw_or_mwh: str = "mw"):
         go.Scatter(
             x=data_df["local_datetime"],
             y=data_df[f"level_fpn_{mw_or_mwh}"] / 1000,
-            name="FPN",
+            name="Wind Potential",
             fill="tozeroy",
         ),
         secondary_y=False,
@@ -39,14 +39,14 @@ def make_time_series_plot(data_df, title: str = None, mw_or_mwh: str = "mw"):
         go.Scatter(
             x=data_df["local_datetime"],
             y=data_df[f"level_after_boal_{mw_or_mwh}"] / 1000,
-            name="level after boal",
+            name="Wind Delivered",
             fill="tozeroy",
         ),
         secondary_y=False,
     )
     # 50% opaacity
     fig.add_trace(
-        go.Bar(x=data_df["local_datetime"], y=data_df["cost_gbp"], name="cost_gbp", opacity=0.5),
+        go.Bar(x=data_df["local_datetime"], y=data_df["cost_gbp"], name="Costs", opacity=0.5),
         secondary_y=True,
     )
 
@@ -58,6 +58,11 @@ def make_time_series_plot(data_df, title: str = None, mw_or_mwh: str = "mw"):
     fig.update_xaxes(title_text="Time")
 
     fig.update_layout(barmode="group", bargap=0.5, bargroupgap=0.0)
+
+    if mw_or_mwh == 'mw':
+        # this is for the day plot
+        fig.update_layout(yaxis_range=[0, 16])
+        fig.update_layout(yaxis2_range=[-1000, 250_000])
 
     # Set y-axes titles
     if mw_or_mwh == "mw":
