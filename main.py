@@ -32,17 +32,18 @@ st.title("UK Wind Curtailment")
 
 start_date = st.date_input("Start Time", min_value=MIN_DATE, max_value=MAX_DATE, value=MIN_DATE)
 end_date = st.date_input("End Time", min_value=MIN_DATE, max_value=MAX_DATE, value=INITIAL_END_DATE)
-filtered_df = filter_data(df.copy(), start_date, end_date)
+filtered_df = filter_data(df.copy(), start_date, end_date).copy()
+filtered_df["month_and_year"] = filtered_df["time"].dt.month_name() + ' ' + filtered_df["time"].dt.year.astype(str)
 
 total_curtailment = filtered_df["delta_mw"].sum() * MINUTES_TO_HOURS
 
 year_df = filtered_df.copy()
 
 year_df["month_idx"] = year_df["time"].dt.month
-year_df["time"] = year_df["time"].dt.month_name()
-year_df_mean = year_df.groupby("time").mean()
-year_df = year_df.groupby("time").sum()
-year_df["time"] = year_df.index
+year_df_mean = year_df.groupby("month_and_year").mean()
+year_df = year_df.groupby("month_and_year").sum()
+year_df["month_and_year"] = year_df.index
+year_df["time"] = year_df["month_and_year"]
 year_df['month_idx'] = year_df_mean['month_idx']
 year_df = year_df.sort_values(by=['month_idx'])
 
@@ -55,10 +56,10 @@ fig = make_time_series_plot(year_df.copy(), title=f"Wind Curtailment for 2022", 
 st.plotly_chart(fig)
 
 # drop down box for months
-option_month = st.selectbox("Select a month", list(year_df["time"]))
+option_month = st.selectbox("Select a month", list(year_df["month_and_year"]))
 
 # get the monthly data
-monthly_df = filtered_df[filtered_df["time"].dt.month_name() == option_month]
+monthly_df = filtered_df[filtered_df["month_and_year"] == option_month]
 monthly_df["time"] = monthly_df["time"].dt.date
 monthly_df = monthly_df.groupby("time").sum()
 monthly_df["time"] = monthly_df.index
