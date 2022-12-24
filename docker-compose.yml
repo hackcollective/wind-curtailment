@@ -14,6 +14,7 @@ services:
     volumes:
       - ./lib:/src/lib
       - ./data:/src/data
+      - ./main.py:/src/main.py
 
   etl:
     build:

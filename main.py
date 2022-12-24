@@ -1,3 +1,5 @@
+import datetime
+
 import pandas as pd
 import streamlit as st
 
@@ -10,10 +12,22 @@ MAX_DATE = pd.to_datetime("2024-01-01")
 
 
 @st.cache
+def get_data(current_hour: str) -> pd.DataFrame:
+    """
+    Use the current hour as the key for the cache, so that when the hour changes, we
+    will pull a new version of the data, but we aren't constantly reading
+    from the database within each hour
+    """
+
+    return read_data()
+
+
+@st.cache
 def filter_data(df, start_date, end_date):
     return df[(df["time"] >= pd.to_datetime(start_date)) & (df["time"] <= pd.to_datetime(end_date))]
 
 
+@st.cache
 def transform_data(df: pd.DataFrame):
     if "cost_gbp" not in df.columns:
         df["cost_gbp"] = 99.99999
@@ -62,7 +76,6 @@ def write_monthly_plot(df: pd.DataFrame, month_and_year: str) -> None:
         f"Wind Curtailment for {month_and_year} {monthly_curtailment_gwh:.2f} GWh: £ {monthly_curtailment_kgbp:.2f} M"
     )
 
-    # daily plot
     fig = make_time_series_plot(monthly_df.copy(), title=f"Wind Curtailment for {month_and_year}", mw_or_mwh="mwh")
     st.plotly_chart(fig)
 
@@ -80,7 +93,8 @@ def write_daily_plot(df: pd.DataFrame, select_date: str) -> None:
     st.plotly_chart(fig)
 
 
-df = read_data()
+current_hour = datetime.datetime.now().strftime("%d/%m/%Y %H")
+df = get_data(current_hour=current_hour)
 
 filtered_df, total_curtailment = transform_data(df)
 
@@ -91,6 +105,6 @@ st.title("UK Wind Curtailment")
 select_date = st.date_input("Select Date", min_value=MIN_DATE, max_value=MAX_DATE, value=st.session_state.today_date)
 month_and_year = pd.to_datetime(select_date).month_name() + " " + str(pd.to_datetime(select_date).year)
 
+write_daily_plot(filtered_df, select_date)
 write_yearly_plot(filtered_df)
 write_monthly_plot(filtered_df, month_and_year)
-write_daily_plot(filtered_df, select_date)
