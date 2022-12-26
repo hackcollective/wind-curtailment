@@ -130,12 +130,6 @@ def fetch_and_load_one_chunk(start_date, end_date, unit_ids, database_engine, ca
     logger.debug(f'there are {len(df_fpn)} FPNS')
     logger.debug(f'there are {len(df_boal)} BOAs')
 
-    logger.debug(f'Selecting wind units only')
-    if len(df_boal) > 0:
-        df_boal = df_boal[df_boal["Fuel Type"] == "WIND"]
-    if len(df_fpn) > 0:
-        df_fpn = df_fpn[df_fpn["Fuel Type"] == "WIND"]
-
     # Duplicates can occur from multiple SP's reporting the same BOAL
     df_boal = df_boal.drop_duplicates(
         subset=["timeFrom", "timeTo", "Accept ID", "levelFrom", "levelTo"]
