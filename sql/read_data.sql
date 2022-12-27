@@ -1,3 +1,7 @@
+--> 1. Joins in the `sbp` table with 'curtailment'
+--> 2. Manipulates some columns which used to be manipulated in pandas (faster in SQL)
+--> 3. start and end time are parameters which are interpolated by the SQL engine
+
 select level_fpn                         as level_fpn_mw,
        level_after_boal                  as level_after_boal_mw,
        delta_mw,
