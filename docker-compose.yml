@@ -12,6 +12,8 @@ services:
     volumes:
       - ./lib:/src/lib
       - ./data:/src/data
+    env_file:
+      - env/.env.local
 
   etl:
     build:
@@ -27,7 +29,7 @@ services:
       - ./data:/src/data
       - ./:/src/
     env_file:
-      - .env
+      - env/.env.local
     entrypoint:  uvicorn etl:app --reload --host "0.0.0.0"
 
   test:
@@ -41,5 +43,5 @@ services:
       - ./scripts:/src/scripts
       - ./data:/src/data
     env_file:
-      - .env
+      - env/.env.local
 
