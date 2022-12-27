@@ -239,12 +239,6 @@ def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
     df_curtailment["Time"] = pd.to_datetime(df_curtailment["Time"]).dt.floor("30T")
     df_curtailment = df_curtailment.groupby(["Time"]).sum()
 
-    # join in SIP data to allow us to work out the cost of the corresponding turnup
-    df_sip = db.get_sip(start_time=start_time, end_time=end_time)
-    df_sip.set_index("timeFrom", inplace=True)  # matching the rounding above, which indexes by SP start
-    df_curtailment = pd.merge(df_curtailment, df_sip, left_index=True, right_index=True)
-    df_curtailment["turnup_costs_gbp"] = df_curtailment["sip_per_mwh"] * df_curtailment["energy_mwh"]
-
     # Move 'Time' back to a column
     df_curtailment = df_curtailment.reset_index()
 
