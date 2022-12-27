@@ -109,7 +109,12 @@ def fetch_and_load_data(
             end_date=end_chunk,
         )
 
-        write_sbp_data(df_sbp)
+        try:
+            write_sbp_data(df=df_sbp)
+            logger.info("Pushing SBP data to postgres :done")
+        except Exception as e:
+            logger.warning("Writing the df_sbp failed, but going to carry on anyway")
+            logger.error(e)
 
         # bump up the start_chunk by 30 minutes
         start_chunk = start_chunk + pd.Timedelta(f"{chunk_size_minutes}T")
