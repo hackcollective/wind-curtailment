@@ -1,9 +1,4 @@
-from lib.data.main import fetch_and_load_data
-
-
-def test_fetch_and_load_data():
-
-    #TODO: I think this is running against the PROD database, which seems dangerous!
+def test_get_sbp():
 
     start = '2022-06-11 04:00'
     end = '2022-06-11 05:00'
