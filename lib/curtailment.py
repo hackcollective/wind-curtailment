@@ -60,7 +60,7 @@ def linearize_physical_data(df: pd.DataFrame):
     base_columns = [x for x in df.columns.copy() if x not in from_columns + to_columns]
 
     if len(df) == 0:
-        return pd.DataFrame(columns = base_columns + ['Level','Time'])
+        return pd.DataFrame(columns=base_columns + ["Level", "Time"])
 
     df = pd.concat(
         (
@@ -126,8 +126,10 @@ def analyze_one_unit(
     if type(df_fpn_unit) == pd.Series:
         df_fpn_unit = pd.DataFrame(df_fpn_unit).T
 
-    logger.debug(f'Analyzing one unit for {len(df_boal_unit)} BOA, '
-                 f'{len(df_fpn_unit)} FPN and {len(df_bod_unit)} BOD')
+    logger.debug(
+        f"Analyzing one unit for {len(df_boal_unit)} BOA, "
+        f"{len(df_fpn_unit)} FPN and {len(df_bod_unit)} BOD"
+    )
 
     # Make time linear
     df_boal_linear = linearize_physical_data(df_boal_unit)
@@ -155,21 +157,19 @@ def analyze_one_unit(
     # unsure if we should take '1' or '-1'. they seemd to have the same 'bidPrice'
     if df_bod_unit is not None:
         df_bod_unit.reset_index(inplace=True)
-        df_bod_unit.loc[:,'bidOfferPairNumber'] = df_bod_unit['bidOfferPairNumber'].astype(float)
-        mask = df_bod_unit['bidOfferPairNumber'] == -1.0
+        df_bod_unit.loc[:, "bidOfferPairNumber"] = df_bod_unit["bidOfferPairNumber"].astype(float)
+        mask = df_bod_unit["bidOfferPairNumber"] == -1.0
         df_bod_unit = df_bod_unit.loc[mask]
-        df_bod_unit.loc[:,"bidPrice"] = df_bod_unit["bidPrice"].astype(float)
+        df_bod_unit.loc[:, "bidPrice"] = df_bod_unit["bidPrice"].astype(float)
 
         # put bid Price into returned dat
-        df_bod_unit.loc[:,"Time"] = pd.to_datetime(df_bod_unit.loc[:,"timeFrom"])
+        df_bod_unit.loc[:, "Time"] = pd.to_datetime(df_bod_unit.loc[:, "timeFrom"])
 
-        df_merged = df_merged.merge(
-            df_bod_unit[["bidPrice", "Time"]], on=["Time"], how='outer'
-        )
-        df_merged['bidPrice'].ffill(inplace=True)
+        df_merged = df_merged.merge(df_bod_unit[["bidPrice", "Time"]], on=["Time"], how="outer")
+        df_merged["bidPrice"].ffill(inplace=True)
 
         # bid price is negative
-        df_merged["energy_mwh"] = df_merged["delta"] * 1/60
+        df_merged["energy_mwh"] = df_merged["delta"] * 1 / 60
         df_merged["cost_gbp"] = -df_merged["bidPrice"] * df_merged["energy_mwh"]
 
     assert "cost_gbp" in df_merged.columns
@@ -194,27 +194,27 @@ def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
     units_bod = df_bod.index.unique()
 
     units = sorted(set(list(units_fpn) + list(units_boa) + list(units_bod)))
-    logger.debug(f'Looking at {len(units)} units')
+    logger.debug(f"Looking at {len(units)} units")
 
     for i, unit in enumerate(units):
-        logger.debug(f'Analyzing {unit} ({i}/{len(units)})')
+        logger.debug(f"Analyzing {unit} ({i}/{len(units)})")
 
         if unit in units_boa:
             df_boal_unit = df_boal.loc[unit]
         else:
-            logger.debug(f'No BOAs for {unit}, so making empty data')
+            logger.debug(f"No BOAs for {unit}, so making empty data")
             df_boal_unit = pd.DataFrame(columns=df_boal.columns)
 
         if unit in units_fpn:
             df_fpn_unit = df_fpn.loc[unit]
         else:
-            logger.debug(f'No FPN for {unit}, so making empty data')
+            logger.debug(f"No FPN for {unit}, so making empty data")
             df_fpn_unit = pd.DataFrame(columns=df_fpn.columns)
 
         if unit in units_bod:
             df_bod_unit = df_bod.loc[unit]
         else:
-            logger.debug(f'No BODS for {unit}, so making empty data')
+            logger.debug(f"No BODS for {unit}, so making empty data")
             df_bod_unit = pd.DataFrame(columns=df_bod.columns)
 
         df_curtailment_unit = analyze_one_unit(
@@ -241,19 +241,19 @@ def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
     logger.debug(f"Total curtailment was {total_curtailment:.2f} MWh ")
 
     # this sometimes happens when there are no baos
-    df_curtailment['Level_BOAL'] = df_curtailment['Level_BOAL'].fillna(0.0)
+    df_curtailment["Level_BOAL"] = df_curtailment["Level_BOAL"].fillna(0.0)
 
     # group and sum by time (in 30 mins chunks)
     df_curtailment = df_curtailment.reset_index()
-    df_curtailment['Time'] = pd.to_datetime(df_curtailment['Time']).dt.floor('30T')
+    df_curtailment["Time"] = pd.to_datetime(df_curtailment["Time"]).dt.floor("30T")
     df_curtailment = df_curtailment.groupby(["Time"]).sum()
     df_curtailment = df_curtailment.reset_index()
 
     # delta is in MW, so if we sum in each 30 minutes, we to /30 to get the average
-    df_curtailment['delta'] = df_curtailment['delta'] / 30
-    df_curtailment['Level_After_BOAL'] = df_curtailment['Level_After_BOAL'] / 30
-    df_curtailment['Level_BOAL'] = df_curtailment['Level_BOAL'] / 30
-    df_curtailment['Level_FPN'] = df_curtailment['Level_FPN'] / 30
+    df_curtailment["delta"] = df_curtailment["delta"] / 30
+    df_curtailment["Level_After_BOAL"] = df_curtailment["Level_After_BOAL"] / 30
+    df_curtailment["Level_BOAL"] = df_curtailment["Level_BOAL"] / 30
+    df_curtailment["Level_FPN"] = df_curtailment["Level_FPN"] / 30
 
     assert "cost_gbp" in df_curtailment.columns
     assert "energy_mwh" in df_curtailment.columns

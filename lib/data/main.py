@@ -13,7 +13,7 @@ from lib.curtailment import analyze_curtailment
 from lib.data.fetch_boa_data import run_boa
 from lib.data.fetch_bod_data import run_bod
 from lib.db_utils import drop_and_initialize_tables, drop_and_initialize_bod_table, DbRepository
-from lib.gcp_db_utils import load_data, write_data
+from lib.gcp_db_utils import load_data, write_data, get_db_connection
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +44,20 @@ def fetch_and_load_data(
     start = pd.Timestamp(start)
     end = pd.Timestamp(end)
 
+    logger.info("Check data is there")
+    engine = get_db_connection()
+    with engine.connect() as conn:
+        logger.debug(f"Getting curtailment from {start} to {end}")
+        df_curtailment = pd.read_sql(
+            f"select * from curtailment where time>='{start}' and time < '{end}'",
+            conn,
+            index_col="time",
+            parse_dates=["time"],
+        )
+        if len(df_curtailment) == 48:
+            logger.info(f"Curtailment already calculated for {start} to {end}")
+            return None
+
     wind_units = df_bm_units[df_bm_units["FUEL TYPE"] == "WIND"]["SETT_BMU_ID"].unique()
 
     logger.info(f"Fetching data from ELEXON {start} {end}")
@@ -57,7 +71,7 @@ def fetch_and_load_data(
         )
 
         end_chunk = start_chunk + pd.Timedelta(f"{chunk_size_minutes}T")
-        logger.info(f'Running chunk from {start_chunk=} to {end_chunk=}')
+        logger.info(f"Running chunk from {start_chunk=} to {end_chunk=}")
 
         # make new SQL database
         db_url = f"phys_data_{start_chunk}_{end_chunk}.db"
@@ -76,7 +90,7 @@ def fetch_and_load_data(
             database_engine=engine,
             cache=True,
             multiprocess=multiprocess,
-            pull_data_once=pull_data_once
+            pull_data_once=pull_data_once,
         )
         run_bod(
             start_date=start_chunk,
@@ -86,7 +100,7 @@ def fetch_and_load_data(
             database_engine=engine,
             cache=True,
             multiprocess=multiprocess,
-            pull_data_once=pull_data_once
+            pull_data_once=pull_data_once,
         )
 
         logger.info("Running analysis")
@@ -101,7 +115,7 @@ def fetch_and_load_data(
         logger.info(f"Pushing to postgres, {len(df)} rows")
         try:
             write_data(df=df)
-            logger.info('Pushing to postgres :done')
+            logger.info("Pushing to postgres :done")
         except Exception as e:
             logger.warning("Writing the df failed, but going to carry on anyway")
             logger.error(e)

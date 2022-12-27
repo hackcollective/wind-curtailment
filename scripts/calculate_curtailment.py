@@ -95,7 +95,7 @@ def run(db: DbRepository, start_time, end_time):
     """
 
     df = analyze_curtailment(db, start_time, end_time)
-    df.to_csv(BASE_DIR/f"data/outputs/results-{start_time}-{end_time}.csv")
+    df.to_csv(BASE_DIR / f"data/outputs/results-{start_time}-{end_time}.csv")
     make_time_series_plot(df)
 
 

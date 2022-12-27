@@ -27,7 +27,7 @@ def get_db_connection():
 def write_data(df: pd.DataFrame):
 
     if len(df) == 0:
-        logger.debug('There was not data to write to the database')
+        logger.debug("There was not data to write to the database")
     else:
 
         engine = get_db_connection()
@@ -43,7 +43,11 @@ def write_data(df: pd.DataFrame):
 def read_data(start_time="2022-01-01", end_time="2023-01-01"):
     engine = get_db_connection()
 
-    raw_query = f"select * from curtailment " f"where time BETWEEN '{start_time}' AND '{end_time}'" f"order by time"
+    raw_query = (
+        f"select * from curtailment "
+        f"where time BETWEEN '{start_time}' AND '{end_time}'"
+        f"order by time"
+    )
 
     with engine.connect() as conn:
         df_curtailment = pd.read_sql(
@@ -61,7 +65,7 @@ def load_data(path: Path) -> pd.DataFrame:
     columns = ["time", "level_fpn", "level_boal", "level_after_boal", "delta_mw", "cost_gbp"]
 
     if len(df) == 0:
-        logger.debug('No data to load')
+        logger.debug("No data to load")
         return pd.DataFrame(columns=columns)
 
     df = df.rename(
@@ -74,4 +78,3 @@ def load_data(path: Path) -> pd.DataFrame:
         }
     )
     return df[columns]
-

@@ -57,17 +57,13 @@ def convert_to_linear_type(df: pd.DataFrame):
             df[base_columns + from_columns].rename(
                 columns={"From Level": "Level", "From Time": "Time"}
             ),
-            df[base_columns + to_columns].rename(
-                columns={"To Level": "Level", "To Time": "Time"}
-            ),
+            df[base_columns + to_columns].rename(columns={"To Level": "Level", "To Time": "Time"}),
         )
     )
 
 
 def filter_for_units_that_change(df_fpn: pd.DataFrame) -> pd.DataFrame:
-    interesting_units = set(
-        df_fpn[df_fpn["From Level"] != df_fpn["To Level"]]["Unit ID"]
-    )
+    interesting_units = set(df_fpn[df_fpn["From Level"] != df_fpn["To Level"]]["Unit ID"])
 
     return df_fpn[df_fpn["Unit ID"].isin(interesting_units)]
 
@@ -78,9 +74,7 @@ def calculate_curtailment_for_settlement_period(df_fpn):
     df_curtailed = df_fpn[df_fpn["delta"] < 0]
 
     # TODO: convert this all into MWh deltas
-    df_curtailed = df_curtailed.groupby("Unit ID").agg(
-        {"Fuel Type": "first", "delta": "sum"}
-    )
+    df_curtailed = df_curtailed.groupby("Unit ID").agg({"Fuel Type": "first", "delta": "sum"})
 
     return df_curtailed
 
