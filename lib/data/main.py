@@ -57,7 +57,7 @@ def fetch_and_load_data(
         )
 
         end_chunk = start_chunk + pd.Timedelta(f"{chunk_size_minutes}T")
-        logger.info(f'Running chunk from {start_chunk=} to {end_chunk=}')
+        logger.info(f"Running chunk from {start_chunk=} to {end_chunk=}")
 
         # make new SQL database
         db_url = f"phys_data_{start_chunk}_{end_chunk}.db"
@@ -76,7 +76,7 @@ def fetch_and_load_data(
             database_engine=engine,
             cache=True,
             multiprocess=multiprocess,
-            pull_data_once=pull_data_once
+            pull_data_once=pull_data_once,
         )
         run_bod(
             start_date=start_chunk,
@@ -86,7 +86,7 @@ def fetch_and_load_data(
             database_engine=engine,
             cache=True,
             multiprocess=multiprocess,
-            pull_data_once=pull_data_once
+            pull_data_once=pull_data_once,
         )
 
         logger.info("Running analysis")
@@ -101,7 +101,7 @@ def fetch_and_load_data(
         logger.info(f"Pushing to postgres, {len(df)} rows")
         try:
             write_data(df=df)
-            logger.info('Pushing to postgres :done')
+            logger.info("Pushing to postgres :done")
         except Exception as e:
             logger.warning("Writing the df failed, but going to carry on anyway")
             logger.error(e)

@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
 
-    logger.info('Get BOA data')
+    logger.info("Get BOA data")
 
     start = pd.Timestamp("2022-01-01")
     end = pd.Timestamp("2022-02-01")
@@ -25,4 +25,3 @@ if __name__ == "__main__":
     wind_units = df_bm_units[df_bm_units["FUEL TYPE"] == "WIND"]["SETT_BMU_ID"].unique()
 
     run_boa(start_date=start, end_date=end, units=wind_units)
-

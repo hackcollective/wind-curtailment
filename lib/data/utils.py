@@ -31,7 +31,13 @@ def call_api_bod(start_date, end_date, unit):
 
 
 def fetch_physical_data(
-    start_date, end_date, save_dir: Path, cache=True, unit_ids=None, multiprocess=False, pull_data_once:bool=False
+    start_date,
+    end_date,
+    save_dir: Path,
+    cache=True,
+    unit_ids=None,
+    multiprocess=False,
+    pull_data_once: bool = False,
 ):
     """From a brief visual inspection, this returns data that looks the same as the stuff I downloaded manually"""
 
@@ -41,30 +47,32 @@ def fetch_physical_data(
             return pd.read_feather(file_name)
 
     if (unit_ids is not None) and (not pull_data_once):
-            if multiprocess:
-                unit_dfs = []
-                with concurrent.futures.ThreadPoolExecutor(max_workers=int(os.getenv('N_POOL_INSTANCES',N_POOL_INSTANCES))) as executor:
+        if multiprocess:
+            unit_dfs = []
+            with concurrent.futures.ThreadPoolExecutor(
+                max_workers=int(os.getenv("N_POOL_INSTANCES", N_POOL_INSTANCES))
+            ) as executor:
 
-                    tasks = [executor.submit(call_api, start_date,end_date, unit) for unit in unit_ids]
+                tasks = [executor.submit(call_api, start_date, end_date, unit) for unit in unit_ids]
 
-                    for future in concurrent.futures.as_completed(tasks):
-                        data = future.result()
-                        unit_dfs.append(data)
+                for future in concurrent.futures.as_completed(tasks):
+                    data = future.result()
+                    unit_dfs.append(data)
 
-            else:
-                unit_dfs = []
-                for i, unit in enumerate(unit_ids):
-                    logger.info(
-                        f"Calling API PHYBMDATA for {unit} ({i}/{len(unit_ids)}) "
-                        f"{start_date=} {end_date=}"
-                    )
-                    unit_dfs.append(call_api(start_date, end_date, unit))
+        else:
+            unit_dfs = []
+            for i, unit in enumerate(unit_ids):
+                logger.info(
+                    f"Calling API PHYBMDATA for {unit} ({i}/{len(unit_ids)}) "
+                    f"{start_date=} {end_date=}"
+                )
+                unit_dfs.append(call_api(start_date, end_date, unit))
 
-            df = pd.concat(unit_dfs)
+        df = pd.concat(unit_dfs)
     else:
         df = client.get_PHYBMDATA(start_date=start_date, end_date=end_date)
         if unit_ids is not None:
-            df = df[df['bmUnitID'].isin(unit_ids)]
+            df = df[df["bmUnitID"].isin(unit_ids)]
 
     if cache:
         df.reset_index(drop=True).to_feather(file_name)
@@ -73,7 +81,13 @@ def fetch_physical_data(
 
 
 def fetch_bod_data(
-    start_date, end_date, save_dir: Path, cache=True, unit_ids=None, multiprocess=False, pull_data_once:bool=False
+    start_date,
+    end_date,
+    save_dir: Path,
+    cache=True,
+    unit_ids=None,
+    multiprocess=False,
+    pull_data_once: bool = False,
 ):
     """From a brief visual inspection, this returns data that looks the same as the stuff I downloaded manually"""
 
@@ -87,9 +101,12 @@ def fetch_bod_data(
 
             unit_dfs = []
             with concurrent.futures.ThreadPoolExecutor(
-                    max_workers=int(os.getenv('N_POOL_INSTANCES', N_POOL_INSTANCES))) as executor:
+                max_workers=int(os.getenv("N_POOL_INSTANCES", N_POOL_INSTANCES))
+            ) as executor:
 
-                tasks = [executor.submit(call_api_bod, start_date, end_date, unit) for unit in unit_ids]
+                tasks = [
+                    executor.submit(call_api_bod, start_date, end_date, unit) for unit in unit_ids
+                ]
 
                 for future in concurrent.futures.as_completed(tasks):
                     data = future.result()
@@ -107,7 +124,7 @@ def fetch_bod_data(
     else:
         df = client.get_BOD(start_date=start_date, end_date=end_date)
         if unit_ids is not None:
-            df = df[df['bmUnitID'].isin(unit_ids)]
+            df = df[df["bmUnitID"].isin(unit_ids)]
 
     if cache:
         df.reset_index(drop=True).to_feather(file_name)
@@ -116,17 +133,17 @@ def fetch_bod_data(
 
 
 def format_physical_data(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.rename(
-        columns={"timeFrom": "From Time", "timeTo": "To Time", "bmUnitID": "Unit"}
-    )
+    df = df.rename(columns={"timeFrom": "From Time", "timeTo": "To Time", "bmUnitID": "Unit"})
 
-    df["From Time"], df["To Time"] = df["From Time"].apply(pd.to_datetime), df[
-        "To Time"
-    ].apply(pd.to_datetime)
+    df["From Time"], df["To Time"] = df["From Time"].apply(pd.to_datetime), df["To Time"].apply(
+        pd.to_datetime
+    )
     return df
 
 
-def add_bm_unit_type(df: pd.DataFrame, df_bm_units: pd.DataFrame, index_name:str='Unit') -> pd.DataFrame:
+def add_bm_unit_type(
+    df: pd.DataFrame, df_bm_units: pd.DataFrame, index_name: str = "Unit"
+) -> pd.DataFrame:
     df = (
         df.set_index(index_name)
         .join(df_bm_units.set_index("SETT_BMU_ID")["FUEL TYPE"])
@@ -138,9 +155,7 @@ def add_bm_unit_type(df: pd.DataFrame, df_bm_units: pd.DataFrame, index_name:str
 
 def parse_fpn_from_physical_data(df: pd.DataFrame) -> pd.DataFrame:
     df = df[df["recordType"] == "PN"]
-    df.rename(
-        columns={f"pnLevel{x}": f"level{x}" for x in ["From", "To"]}, inplace=True
-    )
+    df.rename(columns={f"pnLevel{x}": f"level{x}" for x in ["From", "To"]}, inplace=True)
     return df.dropna(axis=1, how="all")
 
 
