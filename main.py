@@ -32,10 +32,6 @@ def transform_data(df: pd.DataFrame):
     if "cost_gbp" not in df.columns:
         df["cost_gbp"] = 99.99999
 
-    # go from 30 min mean mw to mwh
-    df["level_fpn_mwh"] = df["level_fpn_mw"] * 0.5
-    df["level_after_boal_mwh"] = df["level_after_boal_mw"] * 0.5
-
     filtered_df = filter_data(df, MIN_DATE, MAX_DATE).copy()
     filtered_df["month_and_year"] = filtered_df["time"].dt.month_name() + " " + filtered_df["time"].dt.year.astype(str)
     total_curtailment = filtered_df["delta_mw"].sum() * MINUTES_TO_HOURS
