@@ -6,12 +6,15 @@ services:
       dockerfile:  ./Dockerfile
       context: .
       target: app
+    env_file:
+      - ./env/.env.local
     container_name: wind-curtailment
     ports:
         - 8084:8082
     volumes:
       - ./lib:/src/lib
       - ./data:/src/data
+      - ./main.py:/src/main.py
 
   etl:
     build:
@@ -27,7 +30,7 @@ services:
       - ./data:/src/data
       - ./:/src/
     env_file:
-      - .env
+      - ./env/.env.local
     entrypoint:  uvicorn etl:app --reload --host "0.0.0.0"
 
   test:
@@ -41,5 +44,5 @@ services:
       - ./scripts:/src/scripts
       - ./data:/src/data
     env_file:
-      - .env
+      - ./env/.env.local
 
