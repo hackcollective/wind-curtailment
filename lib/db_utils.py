@@ -95,16 +95,6 @@ class DbRepository:
 
         return df_fpn, df_boal, df_bod
 
-    def get_sip(self, start_time, end_time):
-        logger.debug(f"Getting SIP from {start_time} to {end_time}")
-        with self.engine.connect() as conn:
-            df_sip = pd.read_sql(
-                self._get_query("sip", start_time, end_time),
-                conn,
-                parse_dates=["timeFrom", "timeTo"],
-            )
-        return df_sip
-
 
 if __name__ == "__main__":
     db = DbRepository(BASE_DIR / "scripts/phys_data.db")
