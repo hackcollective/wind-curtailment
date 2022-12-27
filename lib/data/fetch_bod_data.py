@@ -1,5 +1,8 @@
+import concurrent.futures
 import logging
+import os
 import time
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -8,8 +11,7 @@ from sqlalchemy.exc import OperationalError
 
 from lib.constants import SAVE_DIR, DATA_DIR
 from lib.data.utils import (
-    fetch_bod_data,
-    add_bm_unit_type,
+    add_bm_unit_type, logger, client, N_POOL_INSTANCES,
 )
 
 df_bm_units = pd.read_excel(DATA_DIR / "BMUFuelType.xls", header=0)
@@ -104,3 +106,48 @@ def fetch_and_load_one_chunk(start_date, end_date, unit_ids, database_engine, ca
         bod_success = write_bod_to_db(df,database_engine)
 
 
+def call_api_bod(start_date, end_date, unit):
+    """Thin wrapper to allow kwarg passing with starmap"""
+    logger.info(f"Calling BOD API for {unit}")
+    return client.get_BOD(start_date=start_date, end_date=end_date, BMUnitId=unit)
+
+
+def fetch_bod_data(
+    start_date, end_date, save_dir: Path, cache=True, unit_ids=None, multiprocess=False, pull_data_once: bool = False
+):
+    """From a brief visual inspection, this returns data that looks the same as the stuff I downloaded manually"""
+
+    if cache:
+        file_name = save_dir / f"BOD_{start_date}-{end_date}.feather"
+        if file_name.exists():
+            return pd.read_feather(file_name)
+
+    if (unit_ids is not None) and (not pull_data_once):
+        if multiprocess:
+
+            unit_dfs = []
+            with concurrent.futures.ThreadPoolExecutor(
+                max_workers=int(os.getenv("N_POOL_INSTANCES", N_POOL_INSTANCES))
+            ) as executor:
+
+                tasks = [executor.submit(call_api_bod, start_date, end_date, unit) for unit in unit_ids]
+
+                for future in concurrent.futures.as_completed(tasks):
+                    data = future.result()
+                    unit_dfs.append(data)
+
+        else:
+            unit_dfs = []
+            for i, unit in enumerate(unit_ids):
+                logger.info(f"Calling API BOD for {unit} ({i}/{len(unit_ids)}) " f"{start_date=} {end_date=}")
+                unit_dfs.append(call_api_bod(start_date, end_date, unit))
+        df = pd.concat(unit_dfs)
+    else:
+        df = client.get_BOD(start_date=start_date, end_date=end_date)
+        if unit_ids is not None:
+            df = df[df["bmUnitID"].isin(unit_ids)]
+
+    if cache:
+        df.reset_index(drop=True).to_feather(file_name)
+
+    return df

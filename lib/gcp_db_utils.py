@@ -43,6 +43,7 @@ def write_data(df: pd.DataFrame):
 def read_data(start_time="2022-01-01", end_time="2023-01-01"):
     engine = get_db_connection()
 
+    #TODO merge in the SBP data here, to avoid doing a migration
     raw_query = f"select * from curtailment " f"where time BETWEEN '{start_time}' AND '{end_time}'" f"order by time"
 
     with engine.connect() as conn:

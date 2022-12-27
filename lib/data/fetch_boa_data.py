@@ -1,6 +1,9 @@
+import concurrent.futures
 import logging
+import os
 import sqlite3
 import time
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -9,10 +12,9 @@ from sqlalchemy.exc import OperationalError, IntegrityError
 
 from lib.constants import SAVE_DIR, DATA_DIR
 from lib.data.utils import (
-    fetch_physical_data,
     add_bm_unit_type,
     parse_boal_from_physical_data,
-    parse_fpn_from_physical_data,
+    parse_fpn_from_physical_data, logger, client, N_POOL_INSTANCES,
 )
 
 df_bm_units = pd.read_excel(DATA_DIR / "BMUFuelType.xls", header=0)
@@ -152,3 +154,50 @@ def fetch_and_load_one_chunk(start_date, end_date, unit_ids, database_engine, ca
         time.sleep(np.random.randint(1, 20))
         boal_success = write_boal_to_db(df_boal,database_engine)
         retries += 1
+
+
+def call_physbm_api(start_date, end_date, unit):
+    """Thin wrapper to allow kwarg passing with starmap"""
+    logger.info(f"Calling BOAS API for {unit}")
+    return client.get_PHYBMDATA(start_date=start_date, end_date=end_date, BMUnitId=unit)
+
+
+def fetch_physical_data(
+    start_date, end_date, save_dir: Path, cache=True, unit_ids=None, multiprocess=False, pull_data_once: bool = False
+):
+    """From a brief visual inspection, this returns data that looks the same as the stuff I downloaded manually"""
+
+    if cache:
+        file_name = save_dir / f"{start_date}-{end_date}.fthr"
+        if file_name.exists():
+            return pd.read_feather(file_name)
+
+    if (unit_ids is not None) and (not pull_data_once):
+        if multiprocess:
+            unit_dfs = []
+            with concurrent.futures.ThreadPoolExecutor(
+                max_workers=int(os.getenv("N_POOL_INSTANCES", N_POOL_INSTANCES))
+            ) as executor:
+
+                tasks = [executor.submit(call_physbm_api, start_date, end_date, unit) for unit in unit_ids]
+
+                for future in concurrent.futures.as_completed(tasks):
+                    data = future.result()
+                    unit_dfs.append(data)
+
+        else:
+            unit_dfs = []
+            for i, unit in enumerate(unit_ids):
+                logger.info(f"Calling API PHYBMDATA for {unit} ({i}/{len(unit_ids)}) " f"{start_date=} {end_date=}")
+                unit_dfs.append(call_physbm_api(start_date, end_date, unit))
+
+        df = pd.concat(unit_dfs)
+    else:
+        df = client.get_PHYBMDATA(start_date=start_date, end_date=end_date)
+        if unit_ids is not None:
+            df = df[df["bmUnitID"].isin(unit_ids)]
+
+    if cache:
+        df.reset_index(drop=True).to_feather(file_name)
+
+    return df
