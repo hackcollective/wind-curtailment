@@ -24,12 +24,11 @@ def get_db_connection():
     return create_engine(url=address)
 
 
-def write_data(df: pd.DataFrame):
+def write_curtailment_data(df: pd.DataFrame):
 
     if len(df) == 0:
-        logger.debug('There was not data to write to the database')
+        logger.debug("There was not data to write to the database")
     else:
-
         engine = get_db_connection()
         if "local_datetime" in df.columns:
             df = df.rename(columns={"local_datetime": "time"})
@@ -40,10 +39,21 @@ def write_data(df: pd.DataFrame):
             df.to_sql("curtailment", conn, if_exists="append", index=False)
 
 
+def write_sbp_data(df: pd.DataFrame):
+    if len(df) == 0:
+        logger.debug("There was not data to write to the database")
+    else:
+        engine = get_db_connection()
+        logger.info(f"Adding sbp to database ({len(df)}")
+
+        with engine.connect() as conn:
+            df.to_sql("sbp", conn, if_exists="append", index=False)
+
+
 def read_data(start_time="2022-01-01", end_time="2023-01-01"):
     engine = get_db_connection()
 
-    #TODO merge in the SBP data here, to avoid doing a migration
+    # TODO merge in the SBP data here, to avoid doing a migration
     raw_query = f"select * from curtailment " f"where time BETWEEN '{start_time}' AND '{end_time}'" f"order by time"
 
     with engine.connect() as conn:
@@ -62,7 +72,7 @@ def load_data(path: Path) -> pd.DataFrame:
     columns = ["time", "level_fpn", "level_boal", "level_after_boal", "delta_mw", "cost_gbp"]
 
     if len(df) == 0:
-        logger.debug('No data to load')
+        logger.debug("No data to load")
         return pd.DataFrame(columns=columns)
 
     df = df.rename(
@@ -75,4 +85,3 @@ def load_data(path: Path) -> pd.DataFrame:
         }
     )
     return df[columns]
-

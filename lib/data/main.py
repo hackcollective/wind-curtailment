@@ -1,11 +1,10 @@
 import logging
+import os
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 
-import os
-import psutil
-
 import pandas as pd
+import psutil
 from sqlalchemy import create_engine
 
 from lib.constants import df_bm_units
@@ -13,7 +12,7 @@ from lib.curtailment import analyze_curtailment
 from lib.data.fetch_boa_data import run_boa
 from lib.data.fetch_bod_data import run_bod
 from lib.db_utils import drop_and_initialize_tables, drop_and_initialize_bod_table, DbRepository
-from lib.gcp_db_utils import load_data, write_data
+from lib.gcp_db_utils import load_data, write_curtailment_data
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +99,7 @@ def fetch_and_load_data(
 
         logger.info(f"Pushing to postgres, {len(df)} rows")
         try:
-            write_data(df=df)
+            write_curtailment_data(df=df)
             logger.info('Pushing to postgres :done')
         except Exception as e:
             logger.warning("Writing the df failed, but going to carry on anyway")
