@@ -40,6 +40,11 @@ def write_curtailment_data(df: pd.DataFrame):
 
 
 def write_sbp_data(df: pd.DataFrame):
+    df = df.rename({"local_datetime": "time",
+                    "systemBuyPrice": "system_buy_price"})
+
+    df = df[['time', 'system_buy_price']]
+
     if len(df) == 0:
         logger.debug("There was not data to write to the database")
     else:

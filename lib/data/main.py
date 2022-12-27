@@ -11,8 +11,9 @@ from lib.constants import df_bm_units
 from lib.curtailment import analyze_curtailment
 from lib.data.fetch_boa_data import run_boa
 from lib.data.fetch_bod_data import run_bod
+from lib.data.fetch_sbp_data import call_sbp_api
 from lib.db_utils import drop_and_initialize_tables, drop_and_initialize_bod_table, DbRepository
-from lib.gcp_db_utils import load_data, write_curtailment_data
+from lib.gcp_db_utils import load_data, write_curtailment_data, write_sbp_data
 
 logger = logging.getLogger(__name__)
 
@@ -51,12 +52,10 @@ def fetch_and_load_data(
     end_chunk = start_chunk + pd.Timedelta(f"{chunk_size_minutes}T")
     # loop over 30 minutes chunks of data
     while end_chunk <= end:
-        logger.info(
-            f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB"
-        )
+        logger.info(f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
 
         end_chunk = start_chunk + pd.Timedelta(f"{chunk_size_minutes}T")
-        logger.info(f'Running chunk from {start_chunk=} to {end_chunk=}')
+        logger.info(f"Running chunk from {start_chunk=} to {end_chunk=}")
 
         # make new SQL database
         db_url = f"phys_data_{start_chunk}_{end_chunk}.db"
@@ -75,7 +74,7 @@ def fetch_and_load_data(
             database_engine=engine,
             cache=True,
             multiprocess=multiprocess,
-            pull_data_once=pull_data_once
+            pull_data_once=pull_data_once,
         )
         run_bod(
             start_date=start_chunk,
@@ -85,7 +84,7 @@ def fetch_and_load_data(
             database_engine=engine,
             cache=True,
             multiprocess=multiprocess,
-            pull_data_once=pull_data_once
+            pull_data_once=pull_data_once,
         )
 
         logger.info("Running analysis")
@@ -100,10 +99,17 @@ def fetch_and_load_data(
         logger.info(f"Pushing to postgres, {len(df)} rows")
         try:
             write_curtailment_data(df=df)
-            logger.info('Pushing to postgres :done')
+            logger.info("Pushing to postgres :done")
         except Exception as e:
             logger.warning("Writing the df failed, but going to carry on anyway")
             logger.error(e)
+
+        df_sbp = call_sbp_api(
+            start_date=start_chunk,
+            end_date=end_chunk,
+        )
+
+        write_sbp_data(df_sbp)
 
         # bump up the start_chunk by 30 minutes
         start_chunk = start_chunk + pd.Timedelta(f"{chunk_size_minutes}T")

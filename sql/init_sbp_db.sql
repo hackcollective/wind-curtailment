@@ -3,7 +3,7 @@ DROP TABLE IF EXISTS sbp;
 CREATE TABLE sbp
 (
     "time" TIMESTAMP,
-    "sbp" REAL,
+    "system_buy_price" REAL,
     PRIMARY KEY("time")
 
 );
