@@ -32,8 +32,6 @@ def transform_data(df: pd.DataFrame):
     if "cost_gbp" not in df.columns:
         df["cost_gbp"] = 99.99999
 
-    df = df.rename(columns={"level_fpn": "level_fpn_mw", "level_after_boal": "level_after_boal_mw"})
-
     # go from 30 min mean mw to mwh
     df["level_fpn_mwh"] = df["level_fpn_mw"] * 0.5
     df["level_after_boal_mwh"] = df["level_after_boal_mw"] * 0.5

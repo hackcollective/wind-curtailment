@@ -58,13 +58,14 @@ def write_sbp_data(df: pd.DataFrame):
 def read_data(start_time="2022-01-01", end_time="2023-01-01"):
     engine = get_db_connection()
 
-    # TODO merge in the SBP data here, to avoid doing a migration
-    raw_query = f"select * from curtailment " f"where time BETWEEN '{start_time}' AND '{end_time}'" f"order by time"
+    with open(constants.SQL_DIR / "read_data.sql") as f:
+        query = f.read()
 
     with engine.connect() as conn:
         df_curtailment = pd.read_sql(
-            raw_query,
+            query,
             conn,
+            params=dict(start_time=start_time, end_time=end_time),
             parse_dates=["timeFrom", "timeTo"],
         )
 
