@@ -13,6 +13,7 @@ services:
         - 8084:8082
     volumes:
       - ./lib:/src/lib
+      - ./sql:/src/sql
       - ./data:/src/data
       - ./main.py:/src/main.py
 
