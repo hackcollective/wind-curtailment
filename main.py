@@ -2,6 +2,7 @@ import datetime
 
 import pandas as pd
 import streamlit as st
+from streamlit_extras.metric_cards import style_metric_cards
 
 from lib.curtailment import MINUTES_TO_HOURS
 from lib.gcp_db_utils import read_data
@@ -39,6 +40,46 @@ def transform_data(df: pd.DataFrame):
     return filtered_df, total_curtailment
 
 
+MW_TO_TW = 1e-6
+MW_TO_GW = 1e-3
+
+GBP_TO_MGBP = 1e-6
+GBP_TO_KGBP = 1e-3
+
+MW_30m_TO_MWH = 0.5
+
+
+def write_summary_box(df: pd.DataFrame, energy_units="GWh", price_units="M"):
+
+    if energy_units == "GWh":
+        energy_converter = MW_TO_GW
+    elif energy_units == "TWh":
+        energy_converter = MW_TO_TW
+    else:
+        raise ValueError
+
+    curtailment = df["delta_mw"].sum() * energy_converter * MW_30m_TO_MWH
+
+    if price_units == "M":
+        price_converter = GBP_TO_MGBP
+    elif price_units == "K":
+        price_converter = GBP_TO_KGBP
+    else:
+        raise ValueError
+
+    turndown_curtailment = df["cost_gbp"].sum() * price_converter
+    turnup_curtailment = df["turnup_cost_gbp"].sum() * price_converter
+
+    total_curtailment_cost = turndown_curtailment + turnup_curtailment
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric(label=f"Curtailed Wind", value=f"{curtailment:,.1f} {energy_units}")
+    with col2:
+        st.metric(label=f"Cost", value=f"£{total_curtailment_cost:,.1f}{price_units}")
+
+    style_metric_cards()
+
 
 def write_yearly_plot(df: pd.DataFrame) -> None:
     year_df = df.copy()
@@ -51,12 +92,11 @@ def write_yearly_plot(df: pd.DataFrame) -> None:
     year_df["month_idx"] = year_df_mean["month_idx"]
     year_df = year_df.sort_values(by=["month_idx"])
 
-    yearly_curtailment_twh = year_df["delta_mw"].sum() / 10**6 * 0.5
-    yearly_curtailment_mgbp = year_df["cost_gbp"].sum() / 10**6
-    st.write(f"Total Wind Curtailment {yearly_curtailment_twh:.2f} TWh: £ {yearly_curtailment_mgbp:.2f} M")
+    write_summary_box(year_df, energy_units="TWh", price_units="M")
     fig = make_time_series_plot(year_df.copy(), title=f"Wind Curtailment for 2022", mw_or_mwh="mwh")
 
     st.plotly_chart(fig)
+
 
 def write_monthly_plot(df: pd.DataFrame, month_and_year: str) -> None:
     monthly_df = df[df["month_and_year"] == month_and_year]
@@ -64,25 +104,17 @@ def write_monthly_plot(df: pd.DataFrame, month_and_year: str) -> None:
     monthly_df = monthly_df.groupby("time").sum()
     monthly_df["time"] = monthly_df.index
 
-
-    monthly_curtailment_gwh = monthly_df["delta_mw"].sum() / 10**3 * 0.5
-    monthly_curtailment_kgbp = monthly_df["cost_gbp"].sum() / 10**6
-    st.write(
-        f"Wind Curtailment for {month_and_year} {monthly_curtailment_gwh:.2f} GWh: £ {monthly_curtailment_kgbp:.2f} M"
-    )
-
+    write_summary_box(monthly_df, energy_units="GWh", price_units="M")
     fig = make_time_series_plot(monthly_df.copy(), title=f"Wind Curtailment for {month_and_year}", mw_or_mwh="mwh")
     st.plotly_chart(fig)
+
 
 def write_daily_plot(df: pd.DataFrame, select_date: str) -> None:
     daily_df = df[df["time"].dt.date == select_date]
     daily_df = daily_df.groupby("time").sum()
     daily_df["time"] = daily_df.index
 
-    daily_curtailment_gwh = daily_df["delta_mw"].sum() / 10**3 * 0.5
-    daily_curtailment_kgbp = daily_df["cost_gbp"].sum() / 10**6
-    st.write(f"Wind Curtailment for {select_date} {daily_curtailment_gwh:.2f} GWh: £ {daily_curtailment_kgbp:.2f} M")
-
+    write_summary_box(daily_df, energy_units="GWh", price_units="K")
 
     fig = make_time_series_plot(daily_df.copy(), title=f"Wind Curtailment for {select_date}")
     st.plotly_chart(fig)
@@ -100,6 +132,7 @@ st.title("UK Wind Curtailment")
 select_date = st.date_input("Select Date", min_value=MIN_DATE, max_value=MAX_DATE, value=st.session_state.today_date)
 month_and_year = pd.to_datetime(select_date).month_name() + " " + str(pd.to_datetime(select_date).year)
 
+st.write(filtered_df)
 write_daily_plot(filtered_df, select_date)
 write_yearly_plot(filtered_df)
 write_monthly_plot(filtered_df, month_and_year)
