@@ -55,10 +55,13 @@ def make_time_series_plot(data_df, title: str = None, mw_or_mwh: str = "mw"):
     )
     # 50% opacity
     fig.add_trace(
-        go.Bar(x=data_df["local_datetime"], y=data_df["total_cost_gbp"],
-               name="Costs",
-               opacity=.6,
-              marker_color="rgb(250,100,50)"),
+        go.Bar(
+            x=data_df["local_datetime"],
+            y=data_df["total_cost_gbp"],
+            name="Costs",
+            opacity=0.6,
+            marker_color="rgb(250,100,50)",
+        ),
         secondary_y=True,
     )
 
@@ -93,9 +96,6 @@ def make_time_series_plot(data_df, title: str = None, mw_or_mwh: str = "mw"):
     return fig
 
 
-
-
-
 def limit_plot_size(limit="95vw"):
     """
     In browsers that are smaller than 700px (the streamlit column size),
@@ -112,6 +112,9 @@ def limit_plot_size(limit="95vw"):
         + """;
         max-width:300px;}
         }
+        .modebar{
+      display: none !important;
+}
         </style>
         """
     )
