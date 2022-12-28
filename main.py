@@ -92,8 +92,9 @@ def write_yearly_plot(df: pd.DataFrame) -> None:
     year_df["month_idx"] = year_df_mean["month_idx"]
     year_df = year_df.sort_values(by=["month_idx"])
 
+    st.header(f"Wind Curtailment for 2022")
     write_summary_box(year_df, energy_units="TWh", price_units="M")
-    fig = make_time_series_plot(year_df.copy(), title=f"Wind Curtailment for 2022", mw_or_mwh="mwh")
+    fig = make_time_series_plot(year_df.copy(), mw_or_mwh="mwh")
 
     st.plotly_chart(fig)
 
@@ -104,8 +105,9 @@ def write_monthly_plot(df: pd.DataFrame, month_and_year: str) -> None:
     monthly_df = monthly_df.groupby("time").sum()
     monthly_df["time"] = monthly_df.index
 
+    st.header(f"Wind Curtailment for {month_and_year}")
     write_summary_box(monthly_df, energy_units="GWh", price_units="M")
-    fig = make_time_series_plot(monthly_df.copy(), title=f"Wind Curtailment for {month_and_year}", mw_or_mwh="mwh")
+    fig = make_time_series_plot(monthly_df.copy(), mw_or_mwh="mwh")
     st.plotly_chart(fig)
 
 
@@ -114,9 +116,10 @@ def write_daily_plot(df: pd.DataFrame, select_date: str) -> None:
     daily_df = daily_df.groupby("time").sum()
     daily_df["time"] = daily_df.index
 
+    st.header(f"Wind Curtailment for {select_date}")
     write_summary_box(daily_df, energy_units="GWh", price_units="K")
 
-    fig = make_time_series_plot(daily_df.copy(), title=f"Wind Curtailment for {select_date}")
+    fig = make_time_series_plot(daily_df.copy())
     st.plotly_chart(fig)
 
 
@@ -132,7 +135,6 @@ st.title("UK Wind Curtailment")
 select_date = st.date_input("Select Date", min_value=MIN_DATE, max_value=MAX_DATE, value=st.session_state.today_date)
 month_and_year = pd.to_datetime(select_date).month_name() + " " + str(pd.to_datetime(select_date).year)
 
-st.write(filtered_df)
 write_daily_plot(filtered_df, select_date)
-write_yearly_plot(filtered_df)
 write_monthly_plot(filtered_df, month_and_year)
+write_yearly_plot(filtered_df)
