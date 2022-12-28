@@ -17,6 +17,7 @@ COPY ./scripts /src/scripts
 COPY ./data /src/data
 COPY ./tests /src/tests
 
+COPY .streamlit /src/.streamlit
 COPY main.py /src/main.py
 COPY etl.py /src/etl.py
 
