@@ -78,7 +78,7 @@ def write_summary_box(df: pd.DataFrame, energy_units="GWh", price_units="M"):
     with col2:
         st.metric(label=f"Cost", value=f"£{total_curtailment_cost:,.1f}{price_units}")
 
-    style_metric_cards()
+    style_metric_cards(border_left_color='rgb(250,100,50)')
 
 
 def write_yearly_plot(df: pd.DataFrame) -> None:
@@ -111,12 +111,12 @@ def write_monthly_plot(df: pd.DataFrame, month_and_year: str) -> None:
     st.plotly_chart(fig)
 
 
-def write_daily_plot(df: pd.DataFrame, select_date: str) -> None:
+def write_daily_plot(df: pd.DataFrame, select_date: datetime.date) -> None:
     daily_df = df[df["time"].dt.date == select_date]
     daily_df = daily_df.groupby("time").sum()
     daily_df["time"] = daily_df.index
 
-    st.header(f"Wind Curtailment for {select_date}")
+    st.header(f"Wind Curtailment for {select_date.strftime('%d %B %Y')}")
     write_summary_box(daily_df, energy_units="GWh", price_units="K")
 
     fig = make_time_series_plot(daily_df.copy())

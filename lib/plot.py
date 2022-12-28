@@ -46,7 +46,7 @@ def make_time_series_plot(data_df, title: str = None, mw_or_mwh: str = "mw"):
             y=data_df[f"level_after_boal_{mw_or_mwh}"] / 1000,
             name="Wind Delivered",
             fill="tozeroy",
-            fillcolor="rgba(40,100,180,0.5)",
+            fillcolor="rgba(40,100,180,.5)",
             line=dict(width=0),
             marker=None,
         ),
@@ -54,7 +54,10 @@ def make_time_series_plot(data_df, title: str = None, mw_or_mwh: str = "mw"):
     )
     # 50% opacity
     fig.add_trace(
-        go.Bar(x=data_df["local_datetime"], y=data_df["total_cost_gbp"], name="Costs", opacity=0.5),
+        go.Bar(x=data_df["local_datetime"], y=data_df["total_cost_gbp"],
+               name="Costs",
+               opacity=.6,
+              marker_color="rgb(250,100,50)"),
         secondary_y=True,
     )
 
@@ -71,7 +74,7 @@ def make_time_series_plot(data_df, title: str = None, mw_or_mwh: str = "mw"):
         bargap=0.5,
         bargroupgap=0.0,
         margin=dict(l=80, r=80, t=40, b=80),
-        legend=dict(orientation="h", y=1.02, xanchor="left"),
+        legend=dict(orientation="h", y=1.2, xanchor="left"),
     )
 
     if mw_or_mwh == "mw":
