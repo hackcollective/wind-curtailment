@@ -8,7 +8,6 @@ def make_time_series_plot(data_df, title: str = None, mw_or_mwh: str = "mw"):
     # 'Level_fpn_mw', 'level_after_boal_mw',
     # or
     # 'Level_fpn_mwh', 'level_after_boal_mwh'
-
     if "local_datetime" not in data_df.columns:
         data_df["local_datetime"] = data_df["time"]
 
@@ -17,8 +16,11 @@ def make_time_series_plot(data_df, title: str = None, mw_or_mwh: str = "mw"):
         f"level_fpn_{mw_or_mwh}",
         f"level_after_boal_{mw_or_mwh}",
         "cost_gbp",
+        "turnup_cost_gbp",
     ]:
         assert col in data_df.columns
+
+    data_df["total_cost_gbp"] = data_df["cost_gbp"] + data_df["turnup_cost_gbp"]
 
     assert mw_or_mwh in ["mw", "mwh"]
 
@@ -32,6 +34,9 @@ def make_time_series_plot(data_df, title: str = None, mw_or_mwh: str = "mw"):
             y=data_df[f"level_fpn_{mw_or_mwh}"] / 1000,
             name="Wind Potential",
             fill="tozeroy",
+            fillcolor="rgba(40,100,180,0.3)",
+            line=dict(width=0),
+            marker=None,
         ),
         secondary_y=False,
     )
@@ -41,13 +46,19 @@ def make_time_series_plot(data_df, title: str = None, mw_or_mwh: str = "mw"):
             y=data_df[f"level_after_boal_{mw_or_mwh}"] / 1000,
             name="Wind Delivered",
             fill="tozeroy",
-            fillcolor="rgba(240,25,25,0.5)",
+            fillcolor="rgba(40,100,180,.5)",
+            line=dict(width=0),
+            marker=None,
         ),
         secondary_y=False,
     )
-    # 50% opaacity
+    # 50% opacity
     fig.add_trace(
-        go.Bar(x=data_df["local_datetime"], y=data_df["cost_gbp"], name="Costs", opacity=0.5),
+        go.Bar(x=data_df["local_datetime"], y=data_df["total_cost_gbp"],
+               name="Costs",
+               opacity=.6,
+              marker_color="rgb(250,100,50)"),
+
         secondary_y=True,
     )
 
@@ -57,8 +68,15 @@ def make_time_series_plot(data_df, title: str = None, mw_or_mwh: str = "mw"):
 
     # Set x-axis title
     fig.update_xaxes(title_text="Time")
+    fig.update_yaxes(showgrid=False)
 
-    fig.update_layout(barmode="group", bargap=0.5, bargroupgap=0.0)
+    fig.update_layout(
+        barmode="group",
+        bargap=0.5,
+        bargroupgap=0.0,
+        margin=dict(l=80, r=80, t=40, b=80),
+        legend=dict(orientation="h", y=1.2, xanchor="left"),
+    )
 
     if mw_or_mwh == "mw":
         # this is for the day plot

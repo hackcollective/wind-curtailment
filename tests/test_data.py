@@ -1,6 +1,7 @@
-from lib.data.utils import fetch_bod_data
 import tempfile
 from pathlib import Path
+
+from lib.data.fetch_bod_data import fetch_bod_data
 
 
 def test_fetch_bod_data():

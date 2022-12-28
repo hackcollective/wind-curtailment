@@ -1,0 +1,1 @@
+bash scripts/fetch_sbp_and_load_to_db.py --start=2022-01-01 --end=2022-12-27

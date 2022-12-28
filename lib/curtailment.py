@@ -1,8 +1,7 @@
-import pandas as pd
 import logging
-
-
 from typing import Optional
+
+import pandas as pd
 
 from lib.data.utils import MINUTES_TO_HOURS
 from lib.db_utils import DbRepository
@@ -29,13 +28,7 @@ def resolve_applied_bid_offer_level(df_linear: pd.DataFrame):
     out = []
 
     for accept_id, data in df_linear.groupby("Accept ID"):
-        high_freq = (
-            data.reset_index()
-            .rename(columns={"index": "Unit"})
-            .set_index("Time")
-            .resample("T")
-            .first()
-        )
+        high_freq = data.reset_index().rename(columns={"index": "Unit"}).set_index("Time").resample("T").first()
         out.append(high_freq.interpolate("ffill").fillna(method="ffill"))
 
     recombined = pd.concat(out)
@@ -64,9 +57,7 @@ def linearize_physical_data(df: pd.DataFrame):
 
     df = pd.concat(
         (
-            df[base_columns + from_columns].rename(
-                columns={"levelFrom": "Level", "timeFrom": "Time"}
-            ),
+            df[base_columns + from_columns].rename(columns={"levelFrom": "Level", "timeFrom": "Time"}),
             df[base_columns + to_columns].rename(columns={"levelTo": "Level", "timeTo": "Time"}),
         )
     )
@@ -138,9 +129,7 @@ def analyze_one_unit(
     # resolve boa data
     unit_boal_resolved = resolve_applied_bid_offer_level(df_boal_linear)
 
-    unit_fpn_resolved = (
-        linearize_physical_data(df_fpn_unit).set_index("Time").resample("T").mean().interpolate()
-    )
+    unit_fpn_resolved = linearize_physical_data(df_fpn_unit).set_index("Time").resample("T").mean().interpolate()
     unit_fpn_resolved["Notification Type"] = "FPN"
 
     # remove last time valye as we dont want to incluce the first minute in the next 30 mins
@@ -183,7 +172,10 @@ def analyze_one_unit(
 
 
 def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
-    """Produces a dataframe characterizing curtailment between `start_time` and `end_time`"""
+    """Produces a dataframe characterizing curtailment between `start_time` and `end_time`
+
+    This uses the SQLite Db's as input, generating a DF that can then be loaded to the Postgres Db
+    """
 
     df_fpn, df_boal, df_bod = db.get_data_for_time_range(start_time=start_time, end_time=end_time)
 
@@ -247,6 +239,8 @@ def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
     df_curtailment = df_curtailment.reset_index()
     df_curtailment["Time"] = pd.to_datetime(df_curtailment["Time"]).dt.floor("30T")
     df_curtailment = df_curtailment.groupby(["Time"]).sum()
+
+    # Move 'Time' back to a column
     df_curtailment = df_curtailment.reset_index()
 
     # delta is in MW, so if we sum in each 30 minutes, we to /30 to get the average

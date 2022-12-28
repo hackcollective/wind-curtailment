@@ -3,7 +3,7 @@ import pandas as pd
 from lib.constants import BASE_DIR
 
 
-def get_sbp_data() -> pd.Series:
+def load_sbp_data_from_file() -> pd.Series:
 
     # read data
     sip = pd.read_csv(f"{BASE_DIR}/data/sspsbpniv.csv")

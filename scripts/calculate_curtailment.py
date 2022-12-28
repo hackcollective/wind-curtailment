@@ -4,8 +4,8 @@ from pathlib import Path
 import plotly.express as px
 
 from lib.db_utils import DbRepository
-from lib.sbp_utils import get_sbp_data
 from lib.plot import make_time_series_plot
+from lib.sbp_utils import load_sbp_data_from_file
 
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -64,7 +64,7 @@ def run1(db: DbRepository, start_time, end_time):
     fig.show()
 
     print("Getting SIP prices")
-    sip = pd.DataFrame(get_sbp_data())
+    sip = pd.DataFrame(load_sbp_data_from_file())
     delta = df_[["delta", "local_datetime"]]
     delta.set_index("local_datetime", inplace=True)
     delta = delta.resample("30min").mean()

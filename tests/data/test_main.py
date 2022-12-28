@@ -3,8 +3,10 @@ from lib.data.main import fetch_and_load_data
 
 def test_fetch_and_load_data():
 
-    start = "2022-06-11 04:00"
-    end = "2022-06-11 05:00"
+    #TODO: I think this is running against the PROD database, which seems dangerous!
+
+    start = '2022-06-11 04:00'
+    end = '2022-06-11 05:00'
     df = fetch_and_load_data(start=start, end=end)
 
     assert len(df) == 2
