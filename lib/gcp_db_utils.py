@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 from sqlalchemy import create_engine
+from sqlalchemy.exc import IntegrityError
 
 from lib import constants
 
@@ -40,10 +41,9 @@ def write_curtailment_data(df: pd.DataFrame):
 
 
 def write_sbp_data(df: pd.DataFrame):
-    df = df.rename(columns={"local_datetime": "time",
-                            "systemBuyPrice": "system_buy_price"})
+    df = df.rename(columns={"local_datetime": "time", "systemBuyPrice": "system_buy_price"})
 
-    df = df[['time', 'system_buy_price']]
+    df = df[["time", "system_buy_price"]]
 
     if len(df) == 0:
         logger.debug("There was not data to write to the database")
@@ -52,7 +52,10 @@ def write_sbp_data(df: pd.DataFrame):
         logger.info(f"Adding sbp to database ({len(df)}")
 
         with engine.connect() as conn:
-            df.to_sql("sbp", conn, if_exists="append", index=False)
+            try:
+                df.to_sql("sbp", conn, if_exists="append", index=False)
+            except IntegrityError:
+                logger.warning(f"Failed to write df from {df['time'].min} to {df['time'].max()}")
 
 
 def read_data(start_time="2022-01-01", end_time="2023-01-01"):
