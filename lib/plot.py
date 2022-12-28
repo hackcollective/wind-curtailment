@@ -53,7 +53,7 @@ def make_time_series_plot(data_df, title: str = None, mw_or_mwh: str = "mw"):
         ),
         secondary_y=False,
     )
-    # 50% opacity
+    
     fig.add_trace(
         go.Bar(
             x=data_df["local_datetime"],
