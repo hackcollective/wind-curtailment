@@ -58,6 +58,7 @@ def make_time_series_plot(data_df, title: str = None, mw_or_mwh: str = "mw"):
                name="Costs",
                opacity=.6,
               marker_color="rgb(250,100,50)"),
+
         secondary_y=True,
     )
 
