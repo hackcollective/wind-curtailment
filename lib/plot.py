@@ -47,11 +47,7 @@ def make_time_series_plot(data_df, title: str = None, mw_or_mwh: str = "mw"):
     )
     # 50% opaacity
     fig.add_trace(
-        go.Bar(
-            x=data_df["local_datetime"],
-            y=data_df["cost_gbp"],
-            name="Costs",
-            opacity=0.5,
+        go.Bar(x=data_df["local_datetime"], y=data_df["cost_gbp"], name="Costs", opacity=0.5),
         secondary_y=True,
     )
 
