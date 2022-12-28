@@ -132,6 +132,9 @@ st.session_state.today_date = pd.to_datetime("today").date()
 INITIAL_END_DATE = pd.to_datetime("2023-01-01")
 
 st.title("UK Wind Curtailment")
+st.info("Explore the wind power that the UK is "
+        "discarding due to transmission constraints. Select a date to "
+        "see the data for that day and month.")
 select_date = st.date_input("Select Date", min_value=MIN_DATE, max_value=MAX_DATE, value=st.session_state.today_date)
 month_and_year = pd.to_datetime(select_date).month_name() + " " + str(pd.to_datetime(select_date).year)
 
