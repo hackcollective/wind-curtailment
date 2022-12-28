@@ -25,7 +25,16 @@ logger = logging.getLogger(__name__)
 MAX_RETRIES = 1
 
 
-def run_boa(start_date, end_date, units, chunk_size_in_days=7, database_engine=None, cache=True, multiprocess=True,pull_data_once=False):
+def run_boa(
+    start_date,
+    end_date,
+    units,
+    chunk_size_in_days=7,
+    database_engine=None,
+    cache=True,
+    multiprocess=True,
+    pull_data_once=False,
+):
     """
     Collects data from the ElexonAPI, saved as a local feather file, does some preprocessing and then places in
     an SQLite DB.
@@ -45,8 +54,13 @@ def run_boa(start_date, end_date, units, chunk_size_in_days=7, database_engine=N
         logger.info(f"{chunk_start} to {chunk_end}")
         t1 = time.time()
         fetch_and_load_one_chunk(
-            start_date=str(chunk_start), end_date=str(chunk_end), unit_ids=units,
-            database_engine=database_engine, cache=cache, multiprocess=multiprocess,pull_data_once=pull_data_once
+            start_date=str(chunk_start),
+            end_date=str(chunk_end),
+            unit_ids=units,
+            database_engine=database_engine,
+            cache=cache,
+            multiprocess=multiprocess,
+            pull_data_once=pull_data_once,
         )
         t2 = time.time()
         logger.info(f"{(t2 - t1) / 60} minutes for {interval}")
@@ -54,10 +68,10 @@ def run_boa(start_date, end_date, units, chunk_size_in_days=7, database_engine=N
         chunk_end += interval
 
 
-def write_fpn_to_db(df_fpn,database_engine) -> bool:
+def write_fpn_to_db(df_fpn, database_engine) -> bool:
     """Write the FPN df to DB"""
 
-    logger.info(f'Writing {len(df_fpn)} to FPN database')
+    logger.info(f"Writing {len(df_fpn)} to FPN database")
 
     try:
         with database_engine.connect() as connection:
@@ -75,7 +89,7 @@ def write_boal_to_db(df_boal, database_engine) -> bool:
     BOAL twice.
     """
 
-    logger.info(f'Writing {len(df_boal)} to BOA database')
+    logger.info(f"Writing {len(df_boal)} to BOA database")
 
     try:
         with database_engine.connect() as connection:
@@ -102,7 +116,15 @@ def write_boal_to_db(df_boal, database_engine) -> bool:
         return False
 
 
-def fetch_and_load_one_chunk(start_date, end_date, unit_ids, database_engine, cache=True, multiprocess=True,pull_data_once=False):
+def fetch_and_load_one_chunk(
+    start_date,
+    end_date,
+    unit_ids,
+    database_engine,
+    cache=True,
+    multiprocess=True,
+    pull_data_once=False,
+):
     """Fetch and load FPN and BOAL data for `start_date` to `end_date` for units in `unit_ids"""
     # TODO clean up the preprocessing of data here
     logger = logging.getLogger(__name__)
@@ -117,7 +139,7 @@ def fetch_and_load_one_chunk(start_date, end_date, unit_ids, database_engine, ca
         cache=cache,
         unit_ids=unit_ids,
         multiprocess=multiprocess,
-        pull_data_once=pull_data_once
+        pull_data_once=pull_data_once,
     )
 
     df = df.rename(columns={"bmUnitID": "Unit"})
@@ -129,8 +151,14 @@ def fetch_and_load_one_chunk(start_date, end_date, unit_ids, database_engine, ca
 
     df_fpn, df_boal = parse_fpn_from_physical_data(df), parse_boal_from_physical_data(df)
 
-    logger.debug(f'there are {len(df_fpn)} FPNS')
-    logger.debug(f'there are {len(df_boal)} BOAs')
+    logger.debug(f"there are {len(df_fpn)} FPNS")
+    logger.debug(f"there are {len(df_boal)} BOAs")
+
+    logger.debug(f"Selecting wind units only")
+    if len(df_boal) > 0:
+        df_boal = df_boal[df_boal["Fuel Type"] == "WIND"]
+    if len(df_fpn) > 0:
+        df_fpn = df_fpn[df_fpn["Fuel Type"] == "WIND"]
 
     logger.debug(f'Selecting wind units only')
 
@@ -145,7 +173,7 @@ def fetch_and_load_one_chunk(start_date, end_date, unit_ids, database_engine, ca
     )
 
     # DB Locking collisions between processes necessitate a retry loop
-    fpn_success = write_fpn_to_db(df_fpn,database_engine)
+    fpn_success = write_fpn_to_db(df_fpn, database_engine)
     retries = 0
     while not fpn_success and retries < MAX_RETRIES:
         logger.info("Retrying FPN after sleep")
@@ -154,12 +182,12 @@ def fetch_and_load_one_chunk(start_date, end_date, unit_ids, database_engine, ca
 
     # Separated these because pandas autocommits, so FPN could end up being retried unecessarily
     # if subsequent BOAL write has failed!
-    boal_success = write_boal_to_db(df_boal,database_engine)
+    boal_success = write_boal_to_db(df_boal, database_engine)
     retries = 0
     while not boal_success and retries < MAX_RETRIES:
         logger.info("Retrying BOAL after sleep")
         time.sleep(np.random.randint(1, 20))
-        boal_success = write_boal_to_db(df_boal,database_engine)
+        boal_success = write_boal_to_db(df_boal, database_engine)
         retries += 1
 
 

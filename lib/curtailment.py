@@ -118,7 +118,8 @@ def analyze_one_unit(
         df_fpn_unit = pd.DataFrame(df_fpn_unit).T
 
     logger.debug(
-        f"Analyzing one unit for {len(df_boal_unit)} BOA, " f"{len(df_fpn_unit)} FPN and {len(df_bod_unit)} BOD"
+        f"Analyzing one unit for {len(df_boal_unit)} BOA, "
+        f"{len(df_fpn_unit)} FPN and {len(df_bod_unit)} BOD"
     )
 
     # Make time linear

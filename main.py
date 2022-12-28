@@ -39,6 +39,7 @@ def transform_data(df: pd.DataFrame):
     return filtered_df, total_curtailment
 
 
+
 def write_yearly_plot(df: pd.DataFrame) -> None:
     year_df = df.copy()
 
@@ -57,12 +58,12 @@ def write_yearly_plot(df: pd.DataFrame) -> None:
 
     st.plotly_chart(fig)
 
-
 def write_monthly_plot(df: pd.DataFrame, month_and_year: str) -> None:
     monthly_df = df[df["month_and_year"] == month_and_year]
     monthly_df["time"] = monthly_df["time"].dt.date
     monthly_df = monthly_df.groupby("time").sum()
     monthly_df["time"] = monthly_df.index
+
 
     monthly_curtailment_gwh = monthly_df["delta_mw"].sum() / 10**3 * 0.5
     monthly_curtailment_kgbp = monthly_df["cost_gbp"].sum() / 10**6
@@ -73,7 +74,6 @@ def write_monthly_plot(df: pd.DataFrame, month_and_year: str) -> None:
     fig = make_time_series_plot(monthly_df.copy(), title=f"Wind Curtailment for {month_and_year}", mw_or_mwh="mwh")
     st.plotly_chart(fig)
 
-
 def write_daily_plot(df: pd.DataFrame, select_date: str) -> None:
     daily_df = df[df["time"].dt.date == select_date]
     daily_df = daily_df.groupby("time").sum()
@@ -82,6 +82,7 @@ def write_daily_plot(df: pd.DataFrame, select_date: str) -> None:
     daily_curtailment_gwh = daily_df["delta_mw"].sum() / 10**3 * 0.5
     daily_curtailment_kgbp = daily_df["cost_gbp"].sum() / 10**6
     st.write(f"Wind Curtailment for {select_date} {daily_curtailment_gwh:.2f} GWh: £ {daily_curtailment_kgbp:.2f} M")
+
 
     fig = make_time_series_plot(daily_df.copy(), title=f"Wind Curtailment for {select_date}")
     st.plotly_chart(fig)
