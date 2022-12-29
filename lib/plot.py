@@ -1,4 +1,5 @@
 import plotly.graph_objects as go
+import streamlit as st
 from plotly.subplots import make_subplots
 
 
@@ -52,13 +53,15 @@ def make_time_series_plot(data_df, title: str = None, mw_or_mwh: str = "mw"):
         ),
         secondary_y=False,
     )
-    # 50% opacity
+    
     fig.add_trace(
-        go.Bar(x=data_df["local_datetime"], y=data_df["total_cost_gbp"],
-               name="Costs",
-               opacity=.6,
-              marker_color="rgb(250,100,50)"),
-
+        go.Bar(
+            x=data_df["local_datetime"],
+            y=data_df["total_cost_gbp"],
+            name="Costs",
+            opacity=0.6,
+            marker_color="rgb(250,100,50)",
+        ),
         secondary_y=True,
     )
 
@@ -74,7 +77,7 @@ def make_time_series_plot(data_df, title: str = None, mw_or_mwh: str = "mw"):
         barmode="group",
         bargap=0.5,
         bargroupgap=0.0,
-        margin=dict(l=80, r=80, t=40, b=80),
+        margin=dict(l=0, r=20, t=40, b=80),
         legend=dict(orientation="h", y=1.2, xanchor="left"),
     )
 
@@ -91,3 +94,29 @@ def make_time_series_plot(data_df, title: str = None, mw_or_mwh: str = "mw"):
     fig.update_yaxes(title_text="Costs [GBP]", secondary_y=True)
 
     return fig
+
+
+def limit_plot_size(limit="95vw"):
+    """
+    In browsers that are smaller than 700px (the streamlit column size),
+    set the min width of graphs `limit`.
+    """
+
+    plot_style = (
+        """
+            <style>
+         @media screen and (max-width:700px)  {
+         .js-plotly-plot, .plotly, .plot-container 
+        {min-width:"""
+        + limit
+        + """;
+        max-width:300px;}
+        }
+        .modebar{
+      display: none !important;
+}
+        </style>
+        """
+    )
+
+    st.markdown(plot_style, unsafe_allow_html=True)

@@ -4,12 +4,24 @@ import pandas as pd
 import streamlit as st
 from streamlit_extras.metric_cards import style_metric_cards
 
+from lib.constants import (
+    MW_TO_TW,
+    MW_TO_GW,
+    GBP_TO_MGBP,
+    GBP_TO_KGBP,
+    MW_30m_TO_MWH,
+    G_CO2E_PER_KWH_GAS,
+    G_TO_TONNE,
+    MWH_TO_KWH,
+)
 from lib.curtailment import MINUTES_TO_HOURS
 from lib.gcp_db_utils import read_data
-from lib.plot import make_time_series_plot
+from lib.plot import make_time_series_plot, limit_plot_size
 
 MIN_DATE = pd.to_datetime("2022-01-01")
 MAX_DATE = pd.to_datetime("2024-01-01")
+
+
 
 
 @st.cache
@@ -40,21 +52,14 @@ def transform_data(df: pd.DataFrame):
     return filtered_df, total_curtailment
 
 
-MW_TO_TW = 1e-6
-MW_TO_GW = 1e-3
-
-GBP_TO_MGBP = 1e-6
-GBP_TO_KGBP = 1e-3
-
-MW_30m_TO_MWH = 0.5
-
-
 def write_summary_box(df: pd.DataFrame, energy_units="GWh", price_units="M"):
 
     if energy_units == "GWh":
         energy_converter = MW_TO_GW
+        co2_units = "kt"
     elif energy_units == "TWh":
         energy_converter = MW_TO_TW
+        co2_units = "mt"
     else:
         raise ValueError
 
@@ -67,18 +72,22 @@ def write_summary_box(df: pd.DataFrame, energy_units="GWh", price_units="M"):
     else:
         raise ValueError
 
-    turndown_curtailment = df["cost_gbp"].sum() * price_converter
-    turnup_curtailment = df["turnup_cost_gbp"].sum() * price_converter
+    turndown_curtailment_cost = df["cost_gbp"].sum() * price_converter
+    turnup_curtailment_cost = df["turnup_cost_gbp"].sum() * price_converter
 
-    total_curtailment_cost = turndown_curtailment + turnup_curtailment
+    total_curtailment_cost = turndown_curtailment_cost + turnup_curtailment_cost
 
-    col1, col2 = st.columns(2)
+    total_emissions_tonnes = curtailment * MWH_TO_KWH * G_CO2E_PER_KWH_GAS * G_TO_TONNE
+
+    col1, col2, col3 = st.columns(3)
     with col1:
         st.metric(label=f"Curtailed Wind", value=f"{curtailment:,.1f} {energy_units}")
     with col2:
         st.metric(label=f"Cost", value=f"£{total_curtailment_cost:,.1f}{price_units}")
+    with col3:
+        st.metric(label=f"CO2 Emissions", value=f"{total_emissions_tonnes:,.1f}{co2_units}")
 
-    style_metric_cards(border_left_color='rgb(250,100,50)')
+    style_metric_cards(border_left_color="rgb(250,100,50)")
 
 
 def write_yearly_plot(df: pd.DataFrame) -> None:
@@ -132,13 +141,17 @@ st.session_state.today_date = pd.to_datetime("today").date()
 INITIAL_END_DATE = pd.to_datetime("2023-01-01")
 
 st.title("UK Wind Curtailment")
-st.info("Explore the wind power that the UK is "
-        "discarding due to transmission constraints. Select a date to "
-        "see the data for that day and month."
-        "\n\n"
-        "See [this post](todoaddthis) for discussion and methodology")
+st.info(
+    "Explore the wind power that the UK is "
+    "discarding due to transmission constraints. Select a date to "
+    "see the data for that day and month."
+    "\n\n"
+    "See [this post](todoaddthis) for discussion and methodology"
+)
 select_date = st.date_input("Select Date", min_value=MIN_DATE, max_value=MAX_DATE, value=st.session_state.today_date)
 month_and_year = pd.to_datetime(select_date).month_name() + " " + str(pd.to_datetime(select_date).year)
+
+limit_plot_size()
 
 write_daily_plot(filtered_df, select_date)
 write_monthly_plot(filtered_df, month_and_year)
