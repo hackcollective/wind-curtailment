@@ -84,7 +84,7 @@ def make_time_series_plot(data_df, title: str = None, mw_or_mwh: str = "mw"):
     if mw_or_mwh == "mw":
         # this is for the day plot
         fig.update_layout(yaxis_range=[0, 16])
-        fig.update_layout(yaxis2_range=[-1000, 250_000])
+        fig.update_layout(yaxis2_range=[-1000, 750_000])
 
     # Set y-axes titles
     if mw_or_mwh == "mw":
