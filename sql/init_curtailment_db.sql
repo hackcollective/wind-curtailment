@@ -8,6 +8,7 @@ CREATE TABLE curtailment
     "level_after_boal" REAL,
     "delta_mw" REAL,
     "cost_gbp" REAL,
+    "created_utc" TIMESTAMP DEFAULT NOW()
 
     PRIMARY KEY("time")
 
