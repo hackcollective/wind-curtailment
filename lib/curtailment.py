@@ -129,7 +129,7 @@ def analyze_one_unit(
     # resolve boa data
     unit_boal_resolved = resolve_applied_bid_offer_level(df_boal_linear)
 
-    unit_fpn_resolved = linearize_physical_data(df_fpn_unit).set_index("Time").resample("T").mean().interpolate()
+    unit_fpn_resolved = linearize_physical_data(df_fpn_unit).set_index("Time").resample("T").mean(numeric_only=True).interpolate()
     unit_fpn_resolved["Notification Type"] = "FPN"
 
     # remove last time valye as we dont want to incluce the first minute in the next 30 mins
@@ -229,7 +229,7 @@ def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
 
         curtailment_dfs.append(df_curtailment_unit)
 
-    df_curtailment = pd.concat(curtailment_dfs)
+    df_curtailment = pd.concat(curtailment_dfs).copy()
     total_curtailment = df_curtailment["delta"].sum() * MINUTES_TO_HOURS
     logger.debug(f"Total curtailment was {total_curtailment:.2f} MWh ")
 
@@ -238,8 +238,8 @@ def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
 
     # group and sum by time (in 30 mins chunks)
     df_curtailment = df_curtailment.reset_index()
-    df_curtailment.loc[:, "Time"] = pd.to_datetime(df_curtailment["Time"]).dt.floor("30T")
-    df_curtailment = df_curtailment.groupby(["Time"]).sum()
+    df_curtailment["Time"] = pd.to_datetime(df_curtailment["Time"]).dt.floor("30T")
+    df_curtailment = df_curtailment.groupby(["Time"]).sum(numeric_only=True)
 
     # Move 'Time' back to a column
     df_curtailment = df_curtailment.reset_index()
