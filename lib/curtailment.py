@@ -129,7 +129,7 @@ def analyze_one_unit(
     # resolve boa data
     unit_boal_resolved = resolve_applied_bid_offer_level(df_boal_linear)
 
-    unit_fpn_resolved = linearize_physical_data(df_fpn_unit).set_index("Time").resample("T").mean().interpolate()
+    unit_fpn_resolved = linearize_physical_data(df_fpn_unit).set_index("Time").resample("T").mean(numeric_only=True).interpolate()
     unit_fpn_resolved["Notification Type"] = "FPN"
 
     # remove last time valye as we dont want to incluce the first minute in the next 30 mins
@@ -145,14 +145,15 @@ def analyze_one_unit(
 
     # unsure if we should take '1' or '-1'. they seemd to have the same 'bidPrice'
     if df_bod_unit is not None:
+        df_bod_unit = df_bod_unit.copy()
         df_bod_unit.reset_index(inplace=True)
-        df_bod_unit.loc[:, "bidOfferPairNumber"] = df_bod_unit["bidOfferPairNumber"].astype(float)
+        df_bod_unit["bidOfferPairNumber"] = df_bod_unit["bidOfferPairNumber"].astype(float)
         mask = df_bod_unit["bidOfferPairNumber"] == -1.0
         df_bod_unit = df_bod_unit.loc[mask]
-        df_bod_unit.loc[:, "bidPrice"] = df_bod_unit["bidPrice"].astype(float)
+        df_bod_unit["bidPrice"] = df_bod_unit["bidPrice"].astype(float)
 
         # put bid Price into returned dat
-        df_bod_unit.loc[:, "Time"] = pd.to_datetime(df_bod_unit.loc[:, "timeFrom"])
+        df_bod_unit["Time"] = pd.to_datetime(df_bod_unit.loc[:, "timeFrom"])
 
         df_merged = df_merged.merge(df_bod_unit[["bidPrice", "Time"]], on=["Time"], how="outer")
         df_merged["bidPrice"].ffill(inplace=True)
@@ -228,7 +229,7 @@ def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
 
         curtailment_dfs.append(df_curtailment_unit)
 
-    df_curtailment = pd.concat(curtailment_dfs)
+    df_curtailment = pd.concat(curtailment_dfs).copy()
     total_curtailment = df_curtailment["delta"].sum() * MINUTES_TO_HOURS
     logger.debug(f"Total curtailment was {total_curtailment:.2f} MWh ")
 
@@ -238,7 +239,7 @@ def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
     # group and sum by time (in 30 mins chunks)
     df_curtailment = df_curtailment.reset_index()
     df_curtailment["Time"] = pd.to_datetime(df_curtailment["Time"]).dt.floor("30T")
-    df_curtailment = df_curtailment.groupby(["Time"]).sum()
+    df_curtailment = df_curtailment.groupby(["Time"]).sum(numeric_only=True)
 
     # Move 'Time' back to a column
     df_curtailment = df_curtailment.reset_index()
