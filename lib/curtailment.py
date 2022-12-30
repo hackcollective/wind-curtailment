@@ -145,14 +145,15 @@ def analyze_one_unit(
 
     # unsure if we should take '1' or '-1'. they seemd to have the same 'bidPrice'
     if df_bod_unit is not None:
+        df_bod_unit = df_bod_unit.copy()
         df_bod_unit.reset_index(inplace=True)
-        df_bod_unit.loc[:, "bidOfferPairNumber"] = df_bod_unit["bidOfferPairNumber"].astype(float)
+        df_bod_unit["bidOfferPairNumber"] = df_bod_unit["bidOfferPairNumber"].astype(float)
         mask = df_bod_unit["bidOfferPairNumber"] == -1.0
         df_bod_unit = df_bod_unit.loc[mask]
-        df_bod_unit.loc[:, "bidPrice"] = df_bod_unit["bidPrice"].astype(float)
+        df_bod_unit["bidPrice"] = df_bod_unit["bidPrice"].astype(float)
 
         # put bid Price into returned dat
-        df_bod_unit.loc[:, "Time"] = pd.to_datetime(df_bod_unit.loc[:, "timeFrom"])
+        df_bod_unit["Time"] = pd.to_datetime(df_bod_unit.loc[:, "timeFrom"])
 
         df_merged = df_merged.merge(df_bod_unit[["bidPrice", "Time"]], on=["Time"], how="outer")
         df_merged["bidPrice"].ffill(inplace=True)
@@ -237,7 +238,7 @@ def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
 
     # group and sum by time (in 30 mins chunks)
     df_curtailment = df_curtailment.reset_index()
-    df_curtailment["Time"] = pd.to_datetime(df_curtailment["Time"]).dt.floor("30T")
+    df_curtailment.loc[:, "Time"] = pd.to_datetime(df_curtailment["Time"]).dt.floor("30T")
     df_curtailment = df_curtailment.groupby(["Time"]).sum()
 
     # Move 'Time' back to a column
