@@ -93,6 +93,7 @@ def write_summary_box(df: pd.DataFrame, energy_units="GWh", price_units="M"):
 def write_yearly_plot(df: pd.DataFrame) -> None:
     year_df = df.copy()
 
+    # this codes the year and month into 'YYYY0MM', which can be used to sort
     year_df["month_idx"] = 100*year_df["time"].dt.year + year_df["time"].dt.month
     year_df_mean = year_df.groupby("month_and_year").mean()
     year_df = year_df.groupby("month_and_year").sum()
