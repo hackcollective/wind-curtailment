@@ -18,7 +18,7 @@ from lib.curtailment import MINUTES_TO_HOURS
 from lib.gcp_db_utils import read_data
 from lib.plot import make_time_series_plot, limit_plot_size
 
-MIN_DATE = pd.to_datetime("2022-01-01")
+MIN_DATE = pd.to_datetime("2021-01-01")
 MAX_DATE = pd.to_datetime("2024-01-01")
 
 
@@ -32,7 +32,7 @@ def get_data(current_hour: str) -> pd.DataFrame:
     from the database within each hour
     """
 
-    return read_data()
+    return read_data(start_time=MIN_DATE, end_time=MAX_DATE)
 
 
 @st.cache
@@ -93,7 +93,7 @@ def write_summary_box(df: pd.DataFrame, energy_units="GWh", price_units="M"):
 def write_yearly_plot(df: pd.DataFrame) -> None:
     year_df = df.copy()
 
-    year_df["month_idx"] = year_df["time"].dt.month
+    year_df["month_idx"] = 100*year_df["time"].dt.year + year_df["time"].dt.month
     year_df_mean = year_df.groupby("month_and_year").mean()
     year_df = year_df.groupby("month_and_year").sum()
     year_df["month_and_year"] = year_df.index
