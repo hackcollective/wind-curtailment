@@ -102,7 +102,7 @@ def write_yearly_plot(df: pd.DataFrame) -> None:
     year_df["year_month_idx"] = year_df_mean["year_month_idx"]
     year_df = year_df.sort_values(by=["year_month_idx"])
 
-    st.header(f"Wind Curtailment for 2022")
+    st.header(f"Total Wind Curtailment")
     write_summary_box(year_df, energy_units="TWh", price_units="M")
     fig = make_time_series_plot(year_df.copy(), mw_or_mwh="mwh")
 
