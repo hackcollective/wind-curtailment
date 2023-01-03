@@ -158,3 +158,8 @@ limit_plot_size()
 write_daily_plot(filtered_df, select_date)
 write_monthly_plot(filtered_df, month_and_year)
 write_yearly_plot(filtered_df)
+
+st.markdown("<div style='text-align: center; margin-top: 50px; color: rgba(40,80,80,0.9)'> "
+            "<p>🛠 Made by <a href='https://www.linkedin.com/in/peter-dudfield-b379b7a6/'>Peter Dudfield </a>"
+            "and <a href='https://www.linkedin.com/in/archy-de-berker/'>Archy de Berker</a> </p>"
+            "<p> Please <a href='archy.deberker@gmail.com,peter@openclimatefix.org'> get in touch </a> with questions or feedback. </p></div>", unsafe_allow_html=True)
