@@ -147,8 +147,8 @@ st.info(
     "discarding due to transmission constraints. Select a date to "
     "see the data for that day and month."
     "\n\n"
-    "See [this post](https://archy.deberker.com/the-uk-is-wasting-a-lot-of-wind-power/) for discussion and"
-    "notes [here](https://wooden-knee-d53.notion.site/UK-Wind-Curtailment-Monitor-Methodology-71475d0b7cfd4edb97d6397b358f4118) on our methodology."
+    "See [this post](https://archy.deberker.com/the-uk-is-wasting-a-lot-of-wind-power/) for discussion and "
+    "notes on our methodology [here](https://wooden-knee-d53.notion.site/UK-Wind-Curtailment-Monitor-Methodology-71475d0b7cfd4edb97d6397b358f4118)."
 )
 select_date = st.date_input("Select Date", min_value=MIN_DATE, max_value=MAX_DATE, value=st.session_state.today_date)
 month_and_year = pd.to_datetime(select_date).month_name() + " " + str(pd.to_datetime(select_date).year)
