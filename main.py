@@ -94,13 +94,13 @@ def write_yearly_plot(df: pd.DataFrame) -> None:
     year_df = df.copy()
 
     # this codes the year and month into 'YYYY0MM', which can be used to sort
-    year_df["month_idx"] = 100*year_df["time"].dt.year + year_df["time"].dt.month
+    year_df["year_month_idx"] = 100*year_df["time"].dt.year + year_df["time"].dt.month
     year_df_mean = year_df.groupby("month_and_year").mean()
     year_df = year_df.groupby("month_and_year").sum()
     year_df["month_and_year"] = year_df.index
     year_df["time"] = year_df["month_and_year"]
-    year_df["month_idx"] = year_df_mean["month_idx"]
-    year_df = year_df.sort_values(by=["month_idx"])
+    year_df["year_month_idx"] = year_df_mean["year_month_idx"]
+    year_df = year_df.sort_values(by=["year_month_idx"])
 
     st.header(f"Wind Curtailment for 2022")
     write_summary_box(year_df, energy_units="TWh", price_units="M")
