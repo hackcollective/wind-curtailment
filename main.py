@@ -21,7 +21,7 @@ from lib.plot import make_time_series_plot, limit_plot_size
 MIN_DATE = pd.to_datetime("2021-01-01")
 MAX_DATE = pd.to_datetime("2024-01-01")
 
-
+st.set_page_config(page_title="UK Wind Curtailment Monitor")
 
 
 @st.cache
@@ -94,7 +94,7 @@ def write_yearly_plot(df: pd.DataFrame) -> None:
     year_df = df.copy()
 
     # this codes the year and month into 'YYYY0MM', which can be used to sort
-    year_df["year_month_idx"] = 100*year_df["time"].dt.year + year_df["time"].dt.month
+    year_df["year_month_idx"] = 100 * year_df["time"].dt.year + year_df["time"].dt.month
     year_df_mean = year_df.groupby("month_and_year").mean()
     year_df = year_df.groupby("month_and_year").sum()
     year_df["month_and_year"] = year_df.index
@@ -141,13 +141,14 @@ filtered_df, total_curtailment = transform_data(df)
 st.session_state.today_date = pd.to_datetime("today").date()
 INITIAL_END_DATE = pd.to_datetime("2023-01-01")
 
-st.title("UK Wind Curtailment")
+st.title("UK Wind Curtailment Monitor")
 st.info(
     "Explore the wind power that the UK is "
     "discarding due to transmission constraints. Select a date to "
     "see the data for that day and month."
     "\n\n"
-    "See [this post](todoaddthis) for discussion and methodology"
+    "See [this post](https://archy.deberker.com/the-uk-is-wasting-a-lot-of-wind-power/) for discussion and"
+    "notes [here](https://wooden-knee-d53.notion.site/UK-Wind-Curtailment-Monitor-Methodology-71475d0b7cfd4edb97d6397b358f4118) on our methodology."
 )
 select_date = st.date_input("Select Date", min_value=MIN_DATE, max_value=MAX_DATE, value=st.session_state.today_date)
 month_and_year = pd.to_datetime(select_date).month_name() + " " + str(pd.to_datetime(select_date).year)
