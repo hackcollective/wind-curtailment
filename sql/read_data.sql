@@ -14,7 +14,7 @@ select c.time                            as time,
 -->    system_buy_price * delta_mw * 0.5 as turnup_cost_gbp
        200 * delta_mw * 0.5 as turnup_cost_gbp
 from curtailment c
-         join sbp s on c.time = s.time
+         left join sbp s on c.time = s.time
 where c.time BETWEEN CAST(%(start_time)s as TIMESTAMP)
     AND CAST(%(end_time)s as TIMESTAMP)
 order by c.time
