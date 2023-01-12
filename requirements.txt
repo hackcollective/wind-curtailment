@@ -12,10 +12,20 @@ pydantic
 PyYAML
 QtPy
 requests
-streamlit
 SQLAlchemy==1.4.37
 xlrd
-streamlit-extras
+
+# streamlit - frozen to allow tracking hack (see static dir)
+streamlit==1.16.0
+streamlit-camera-input-live==0.2.0
+streamlit-card==0.0.4
+streamlit-embedcode==0.1.2
+streamlit-extras==0.2.4
+streamlit-faker==0.0.2
+streamlit-keyup==0.2.0
+streamlit-toggle-switch==1.0.2
+streamlit-vertical-slider==1.0.2
+
 
 # etl
 fastapi
