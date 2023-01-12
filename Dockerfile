@@ -11,7 +11,7 @@ RUN apt-get install libxml2-dev libxslt-dev python-dev --yes
 COPY ./requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
-# COPY ./static/index.html /usr/local/lib/python3.10/site-packages/streamlit/static/index.html
+COPY ./static/index.html /usr/local/lib/python3.10/site-packages/streamlit/static/index.html
 
 
 COPY ./lib /src/lib
