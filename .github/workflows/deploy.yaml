@@ -16,8 +16,11 @@ jobs:
 
     - name: Make env.prod
       run: |
+        echo "A"
         export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+        echo "B"
         bash scripts/make_env_prod.sh
+        echo "C"
         more env/.env.prod2 # check it made # TODO remove this
 
     - name: Build and publish app image to GCR
