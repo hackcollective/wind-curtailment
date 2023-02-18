@@ -1,21 +1,21 @@
-# wind-curtailment
+# UK Wind Curtailment Monitor
 
-# Deployment
-App is deployed via GH Actions to GCP Cloud Run.
+Exploring the wind power that the UK is discarding due to transmission constraints
 
-In the Github [workflow](./.github/workflows/deploy.yaml) the Docker image is built, pushed to container registry,
-and then a new cloud run revision is initialized against the updated image.
+https://wind-curtailment-app-ahq7fucdyq-lz.a.run.app/
 
-Depends upon a single deploy secret (GLOUD_AUTH) which is in `Secrets > Actions` in Github, and is a base64 encoded
-version of the default service account credentials in GCP.
 
-# Data
-We hit the Elexon API to get data. See `scripts/fetch_data.py. This is saved to an SQLite DB. See details in that
-script.
+## Methodology
 
-Raw data is also saved as `feather` files to './data/PHYBM/raw'.
+By pulling data from Elexon, we combine FPNs, BOALS, and BOD to see the effects of wind curtilament
 
-# Analysis
+More details are [here](https://wooden-knee-d53.notion.site/UK-Wind-Curtailment-Monitor-Methodology-71475d0b7cfd4edb97d6397b358f4118)
+
+
+## Data
+We use the Elexon API to get data. See `scripts/fetch_data.py`. This is saved to an SQLite DB. Note that raw data is also saved as `feather` files to `./data/PHYBM/raw`.
+
+## Analysis
 Run `scripts/calculate_curtailment.py` to run the analysis against the SQLite DB.
 
 ## Notebooks
@@ -29,6 +29,30 @@ Might need to run
 `export PYTHONPATH=${PYTHONPATH}:/lib`
 to get the lib in to your python path
 
-## APP
+## App
 simple streamlit app can be run using
 `streamlit run main.py`
+
+![image](app.png)
+
+## ETL
+
+Fast API app that can be called to fetch data from Elexon and save to a database. 
+
+## Deployment
+App is deployed via GH Actions to GCP Cloud Run.
+
+In the Github [workflow](./.github/workflows/deploy.yaml) 
+- `env/.env.prod` file is made (DB_PASSWORD is saved in `Secrets > Actions` in Github)
+- the Docker image is built, 
+- pushed to container registry,
+- a new cloud run revision is initialized against the updated image.
+- This is done for both the `app` and the `etl`
+
+Depends upon a single deploy secret (GLOUD_AUTH) which is in `Secrets > Actions` in Github, and is a base64 encoded
+version of the default service account credentials in GCP.
+
+
+## FAQs
+
+TODO
