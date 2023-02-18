@@ -19,7 +19,7 @@ jobs:
         echo "A"
         bash scripts/make_env_prod.sh
         echo "B"
-        more env/.env.prod2 # check it made # TODO remove this
+        more env/.env.prod # check it made # TODO remove this
       env:
         DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
 
