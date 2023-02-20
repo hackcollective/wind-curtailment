@@ -13,6 +13,12 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
+    - name: Make env.prod
+      run: |
+        bash scripts/make_env_prod.sh
+      env:
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+
     - name: Build and publish app image to GCR
       uses: carbonchain/action-container-registry@v1.4
       with:
