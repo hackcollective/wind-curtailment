@@ -3,7 +3,7 @@ argon2-cffi==21.3.0
 argon2-cffi-bindings==21.2.0
 ElexonDataPortal
 numpy
-pandas
+pandas==1.5.3
 plotly
 powerdict
 pyarrow
