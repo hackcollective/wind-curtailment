@@ -169,6 +169,9 @@ def analyze_one_unit(
     assert "Level_BOAL" in df_merged.columns
     assert "Level_FPN" in df_merged.columns
 
+    # change Time from UTC to Europe/London, this is because Time is made from timeFrom which is in UTC
+    df_merged["Time"] = pd.to_datetime(df_merged["Time"].dt.tz_localize('UTC')).dt.tz_convert("Europe/London")
+
     return df_merged
 
 

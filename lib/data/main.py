@@ -24,6 +24,7 @@ def fetch_and_load_data(
     chunk_size_minutes: int = 60,
     multiprocess: bool = True,
     pull_data_once: bool = True,
+    save: bool = True,
 ):
     """
     Entrypoint for the scheduled data refresh. Fetches data from Elexon and pushes
@@ -51,6 +52,7 @@ def fetch_and_load_data(
     start_chunk = start
     end_chunk = start_chunk + pd.Timedelta(f"{chunk_size_minutes}T")
     # loop over 30 minutes chunks of data
+    logger.info(f"Running chunk from {start_chunk=} to {end_chunk=}, {end=}")
     while end_chunk <= end:
         logger.info(f"Memory in use: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2} MB")
 
@@ -97,26 +99,29 @@ def fetch_and_load_data(
         df = load_data(f"./data/outputs/results-{start_chunk}-{end_chunk}.csv")
 
         logger.info(f"Pushing to postgres, {len(df)} rows")
-        try:
-            write_curtailment_data(df=df)
-            logger.info("Pushing to postgres :done")
-        except Exception as e:
-            logger.warning("Writing the df failed, but going to carry on anyway")
-            logger.error(e)
+        if save:
+            try:
+                write_curtailment_data(df=df)
+                logger.info("Pushing to postgres :done")
+            except Exception as e:
+                logger.warning("Writing the df failed, but going to carry on anyway")
+                logger.error(e)
 
         df_sbp = call_sbp_api(
             start_date=start_chunk,
             end_date=end_chunk,
         )
 
-        try:
-            write_sbp_data(df=df_sbp)
-            logger.info("Pushing SBP data to postgres :done")
-        except Exception as e:
-            logger.warning("Writing the df_sbp failed, but going to carry on anyway")
-            logger.error(e)
+        if save:
+            try:
+                write_sbp_data(df=df_sbp)
+                logger.info("Pushing SBP data to postgres :done")
+            except Exception as e:
+                logger.warning("Writing the df_sbp failed, but going to carry on anyway")
+                logger.error(e)
 
         # bump up the start_chunk by 30 minutes
         start_chunk = start_chunk + pd.Timedelta(f"{chunk_size_minutes}T")
+        end_chunk = start_chunk + pd.Timedelta(f"{chunk_size_minutes}T")
 
     return df
