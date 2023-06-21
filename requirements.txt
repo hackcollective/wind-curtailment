@@ -14,6 +14,8 @@ QtPy
 requests
 SQLAlchemy==1.4.37
 xlrd
+altair=4.2.2
+
 
 # streamlit - frozen to allow tracking hack (see static dir)
 streamlit==1.16.0
