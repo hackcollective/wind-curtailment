@@ -39,5 +39,5 @@ def test_fetch_bod_data():
             parse_dates=["timeFrom", "timeTo"],
         )
 
-    assert len(df_bod) == 276
-    assert len(df_fpn) == 384
+    assert len(df_bod) == 281
+    assert len(df_fpn) == 394

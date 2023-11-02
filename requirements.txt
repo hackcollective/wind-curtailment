@@ -15,6 +15,7 @@ requests
 SQLAlchemy==1.4.37
 xlrd
 altair==4.2.2
+openpyxl
 
 
 # streamlit - frozen to allow tracking hack (see static dir)
