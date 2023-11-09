@@ -47,6 +47,7 @@ def transform_data(df: pd.DataFrame):
 
     filtered_df = filter_data(df, MIN_DATE, MAX_DATE).copy()
     filtered_df["month_and_year"] = filtered_df["time"].dt.month_name() + " " + filtered_df["time"].dt.year.astype(str)
+    filtered_df["year"] = filtered_df["time"].dt.year.astype(str)
     total_curtailment = filtered_df["delta_mw"].sum() * MINUTES_TO_HOURS
 
     return filtered_df, total_curtailment
@@ -90,10 +91,10 @@ def write_summary_box(df: pd.DataFrame, energy_units="GWh", price_units="M"):
     style_metric_cards(border_left_color="rgb(250,100,50)")
 
 
-def write_yearly_plot(df: pd.DataFrame) -> None:
-    year_df = df.copy()
+def write_yearly_plot(df: pd.DataFrame, year: str) -> None:
 
     # this codes the year and month into 'YYYY0MM', which can be used to sort
+    year_df = df[df["year"] == year]
     year_df["year_month_idx"] = 100 * year_df["time"].dt.year + year_df["time"].dt.month
     year_df_mean = year_df.groupby("month_and_year").mean()
     year_df = year_df.groupby("month_and_year").sum()
@@ -102,10 +103,32 @@ def write_yearly_plot(df: pd.DataFrame) -> None:
     year_df["year_month_idx"] = year_df_mean["year_month_idx"]
     year_df = year_df.sort_values(by=["year_month_idx"])
 
-    st.header(f"Total Wind Curtailment")
+    st.header(f"Total Wind Curtailment for {year}")
     write_summary_box(year_df, energy_units="TWh", price_units="M")
     fig = make_time_series_plot(year_df.copy(), mw_or_mwh="mwh")
 
+    st.plotly_chart(fig)
+
+
+def write_all_year_plot(df: pd.DataFrame) -> None:
+
+    # format data
+    year_df = df.copy()
+    year_df["time"] = year_df["year"]
+    year_df = year_df.groupby("time").sum()
+    year_df["time"] = year_df.index
+
+    # plot the data
+    st.header(f"Total Wind Curtailment")
+    write_summary_box(year_df, energy_units="GWh", price_units="M")
+    fig = make_time_series_plot(year_df.copy(), mw_or_mwh="mwh")
+
+    # make sure only the years show on the plot, not for example 2019.5
+    years = df["year"].unique()
+    fig.update_layout(
+        xaxis=dict(
+            tickmode='array',  # change 1
+            tickvals=years,))
     st.plotly_chart(fig)
 
 
@@ -152,12 +175,14 @@ st.info(
 )
 select_date = st.date_input("Select Date", min_value=MIN_DATE, max_value=MAX_DATE, value=st.session_state.today_date)
 month_and_year = pd.to_datetime(select_date).month_name() + " " + str(pd.to_datetime(select_date).year)
+year = str(pd.to_datetime(select_date).year)
 
 limit_plot_size()
 
 write_daily_plot(filtered_df, select_date)
 write_monthly_plot(filtered_df, month_and_year)
-write_yearly_plot(filtered_df)
+write_yearly_plot(filtered_df, year)
+write_all_year_plot(filtered_df)
 
 st.markdown("<div style='text-align: center; margin-top: 50px; color: rgba(40,80,80,0.9)'> "
             "<p>🛠 Made by <a href='https://www.linkedin.com/in/peter-dudfield-b379b7a6/'>Peter Dudfield </a>"
