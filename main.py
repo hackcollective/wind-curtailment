@@ -120,7 +120,7 @@ def write_all_year_plot(df: pd.DataFrame) -> None:
 
     # plot the data
     st.header(f"Total Wind Curtailment")
-    write_summary_box(year_df, energy_units="GWh", price_units="M")
+    write_summary_box(year_df, energy_units="TWh", price_units="M")
     fig = make_time_series_plot(year_df.copy(), mw_or_mwh="mwh")
 
     # make sure only the years show on the plot, not for example 2019.5
