@@ -19,7 +19,7 @@ from lib.gcp_db_utils import read_data
 from lib.plot import make_time_series_plot, limit_plot_size
 
 MIN_DATE = pd.to_datetime("2021-01-01")
-MAX_DATE = pd.to_datetime("2024-01-01")
+MAX_DATE = pd.to_datetime("2025-01-01")
 
 st.set_page_config(page_title="UK Wind Curtailment Monitor", page_icon="./static/favicon.png")
 
