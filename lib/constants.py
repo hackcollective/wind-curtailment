@@ -29,9 +29,9 @@ extra_wind_units= [
     "E_THNTW-1",
     "E_THNTW-2"
 ]
-df_bm_etra_units = pd.DataFrame(extra_wind_units, columns=['SETT_BMU_ID'])
-df_bm_etra_units['FUEL TYPE'] = 'WIND'
-df_bm_units = pd.concat([df_bm_units, df_bm_etra_units])
+df_bm_extra_units = pd.DataFrame(extra_wind_units, columns=['SETT_BMU_ID'])
+df_bm_extra_units['FUEL TYPE'] = 'WIND'
+df_bm_units = pd.concat([df_bm_units, df_bm_extra_units])
 
 G_CO2E_PER_KWH_GAS = 430 # https://unece.org/sites/default/files/2021-10/LCA-2.pdf Table 7.2.1
 MW_TO_TW = 1e-6
