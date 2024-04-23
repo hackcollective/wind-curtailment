@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 The new elexon api url is 
 'https://data.elexon.co.uk/bmrs/api/v1/balancing/settlement/system-prices/2024-04-23?format=json'
 
+Note that prices seem to be only available in 2024
 """
 
 url = "https://data.elexon.co.uk/bmrs/api/v1/balancing/settlement/system-prices/"
