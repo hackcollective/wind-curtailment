@@ -15,15 +15,16 @@ def test_fetch_bod_data():
     # initialize database
     drop_and_initialize_bod_table(db_url)
 
-    start = pd.Timestamp("2022-06-11 04:00")
-    end = pd.Timestamp("2022-06-11 05:00")
+    start = pd.Timestamp("2024-04-11 04:00")
+    end = pd.Timestamp("2024-04-11 05:00")
     run_bod(
         start_date=start,
         end_date=end,
         units=None,
         database_engine=engine,
         chunk_size_in_days=1 / 24,
-        cache=False
+        cache=False,
+        multiprocess=False,
     )
 
     with engine.connect() as conn:
@@ -33,6 +34,6 @@ def test_fetch_bod_data():
             parse_dates=["timeFrom", "timeTo"],
         )
 
-    assert len(df_bod) == 640
+    assert len(df_bod) == 2190
     # assert (df_bod['local_datetime'] <= end).all()
     # assert (df_bod['local_datetime'] >= start).all()
