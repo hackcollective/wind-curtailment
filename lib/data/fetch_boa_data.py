@@ -2,6 +2,7 @@ import concurrent.futures
 import logging
 import os
 import sqlite3
+import requests
 import time
 from pathlib import Path
 
@@ -77,7 +78,8 @@ def write_fpn_to_db(df_fpn, database_engine) -> bool:
         with database_engine.connect() as connection:
             df_fpn.to_sql("fpn", connection, if_exists="append", index_label="unit")
         return True
-    except OperationalError:
+    except Exception as e:
+        print(e)
         return False
 
 
@@ -112,7 +114,8 @@ def write_boal_to_db(df_boal, database_engine) -> bool:
                         logging.warning(e)
                         pass
         return True
-    except OperationalError:
+    except Exception as e:
+        print(e)
         return False
 
 
@@ -178,7 +181,8 @@ def fetch_and_load_one_chunk(
     while not fpn_success and retries < MAX_RETRIES:
         logger.info("Retrying FPN after sleep")
         time.sleep(np.random.randint(1, 20))
-        fpn_success = write_fpn_to_db(df_fpn)
+        fpn_success = write_fpn_to_db(df_fpn, database_engine)
+        retries += 1
 
     # Separated these because pandas autocommits, so FPN could end up being retried unecessarily
     # if subsequent BOAL write has failed!
@@ -191,10 +195,70 @@ def fetch_and_load_one_chunk(
         retries += 1
 
 
-def call_physbm_api(start_date, end_date, unit):
+def call_physbm_api(start_date, end_date, unit=None):
     """Thin wrapper to allow kwarg passing with starmap"""
     logger.info(f"Calling BOAS API for {unit}")
-    return client.get_PHYBMDATA(start_date=start_date, end_date=end_date, BMUnitId=unit)
+
+    # Nedd to call PNs and BOALs separately in new API
+
+    # "https://data.elexon.co.uk/bmrs/api/v1/balancing/physical/all?dataset={dataset}&settlementDate={settlementDate}&settlementPeriod={settlementPeriod}&format=json"
+
+    datetimes = pd.date_range(start_date, end_date, freq="30min")
+    data_df = []
+    for datetime in datetimes:
+        logger.info(f"Getting PV from {datetime}")
+        date = datetime.date()
+        sp = datetime.hour * 2 + datetime.minute // 30 # TODO might not work on clock change
+        url = f"https://data.elexon.co.uk/bmrs/api/v1/balancing/physical/all?dataset=PN&settlementDate={date}&settlementPeriod={sp}"
+        if unit is not None:
+            url = url + f"&bmUnit={unit}"
+        url = url + "&format=json"
+
+        r = requests.get(url)
+
+        data_one_settlement_period_df = pd.DataFrame(r.json()["data"])
+        data_df.append(data_one_settlement_period_df)
+
+    data_pn_df = pd.concat(data_df)
+
+    datetimes = pd.date_range(start_date, end_date, freq="30min")
+    data_df = []
+    for datetime in datetimes:
+        logger.info(f"Getting BOALF from {datetime}")
+        url = f"https://data.elexon.co.uk/bmrs/api/v1/datasets/BOALF?from={datetime}&to={datetime}"
+        if unit is not None:
+            url = url + f"&bmUnit={unit}"
+        url = url + "&format=json"
+
+        r = requests.get(url)
+
+        data_one_settlement_period_df = pd.DataFrame(r.json()["data"])
+        data_df.append(data_one_settlement_period_df)
+
+    data_boa_df = pd.concat(data_df)
+
+    # rename bmUnit to bmUnitID
+    data_pn_df.rename(columns={"bmUnit": "Unit"}, inplace=True)
+    data_boa_df.rename(columns={"bmUnit": "Unit"}, inplace=True)
+
+    # drop dataset column
+    data_boa_df.drop(columns=["nationalGridBmUnit"], inplace=True)
+    data_pn_df.drop(columns=["nationalGridBmUnit"], inplace=True)
+    data_boa_df.drop(columns=["settlementPeriodTo"], inplace=True)
+    data_boa_df.drop(columns=["amendmentFlag"], inplace=True)
+    data_boa_df.drop(columns=["storFlag"], inplace=True)
+
+    # rename LevelFrom to bidOfferLevelFrom
+    data_pn_df.rename(columns={"dataset": "recordType"}, inplace=True)
+    data_boa_df.rename(columns={"dataset": "recordType"}, inplace=True)
+    data_boa_df.rename(columns={"acceptanceNumber": "Accept ID"}, inplace=True)
+    data_boa_df.rename(columns={"settlementPeriodFrom": "settlementPeriod"}, inplace=True)
+    data_boa_df.rename(columns={"deemedBoFlag": "deemedBidOfferFlag"}, inplace=True)
+    data_boa_df.rename(columns={"rrFlag": "rrScheduleFlag"}, inplace=True)
+
+    data_df = pd.concat([data_boa_df, data_pn_df], axis=0)
+
+    return data_df
 
 
 def fetch_physical_data(
@@ -228,7 +292,7 @@ def fetch_physical_data(
 
         df = pd.concat(unit_dfs)
     else:
-        df = client.get_PHYBMDATA(start_date=start_date, end_date=end_date)
+        df = call_physbm_api(start_date=start_date, end_date=end_date)
         if unit_ids is not None:
             df = df[df["bmUnitID"].isin(unit_ids)]
 
