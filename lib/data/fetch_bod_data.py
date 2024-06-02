@@ -135,7 +135,6 @@ def call_api_bod(start_date, end_date, unit = None):
     logger.info(f"Calling BOD API for {unit}")
 
     # "https://data.elexon.co.uk/bmrs/api/v1/datasets/BOD?from=2024-03-01&to=2024-03-01&bmUnit=T_ACHRW-1&format=json"
-
     datetimes = pd.date_range(start_date, end_date, freq="30min")
     data_df = []
     for datetime in datetimes:
@@ -167,6 +166,10 @@ def call_api_bod(start_date, end_date, unit = None):
     data_df.rename(columns={"bid": "bidPrice"}, inplace=True)
     data_df.rename(columns={"dataset": "recordType"}, inplace=True)
 
+    data_df['local_datetime'] = pd.to_datetime(data_df['timeFrom'])
+    # remove anything after end_date
+    data_df = data_df[data_df['local_datetime'] < end_date]
+
     return data_df
 
 
@@ -176,6 +179,7 @@ def fetch_bod_data(
     """From a brief visual inspection, this returns data that looks the same as the stuff I downloaded manually"""
 
     if cache:
+        logger.info('Loading BOD data from cache')
         file_name = save_dir / f"BOD_{start_date}-{end_date}.feather"
         if file_name.exists():
             return pd.read_feather(file_name)

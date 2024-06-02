@@ -34,6 +34,6 @@ def test_fetch_bod_data():
             parse_dates=["timeFrom", "timeTo"],
         )
 
-    assert len(df_bod) == 2190
+    assert len(df_bod) == 1236
     # assert (df_bod['local_datetime'] <= end).all()
     # assert (df_bod['local_datetime'] >= start).all()

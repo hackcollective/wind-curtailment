@@ -236,8 +236,9 @@ def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
     total_curtailment = df_curtailment["delta"].sum() * MINUTES_TO_HOURS
     logger.debug(f"Total curtailment was {total_curtailment:.2f} MWh ")
 
-    # this sometimes happens when there are no baos
+    # this sometimes happens when there are no boas
     df_curtailment["Level_BOAL"] = df_curtailment["Level_BOAL"].fillna(0.0)
+    df_curtailment["cost_gbp"] = df_curtailment["cost_gbp"].fillna(0.0)
 
     # group and sum by time (in 30 mins chunks)
     df_curtailment = df_curtailment.reset_index()
@@ -252,6 +253,10 @@ def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
     df_curtailment["Level_After_BOAL"] = df_curtailment["Level_After_BOAL"] / 30
     df_curtailment["Level_BOAL"] = df_curtailment["Level_BOAL"] / 30
     df_curtailment["Level_FPN"] = df_curtailment["Level_FPN"] / 30
+
+    # remove anything after the end_datetime
+    end_time = pd.to_datetime(end_time).tz_localize("UTC")
+    df_curtailment = df_curtailment[df_curtailment["Time"] < pd.to_datetime(end_time)]
 
     assert "cost_gbp" in df_curtailment.columns
     assert "energy_mwh" in df_curtailment.columns

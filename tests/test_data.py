@@ -28,7 +28,7 @@ def test_fetch_bod_data():
     # should be just BOD
 
     # Not sure this is working right now
-    assert len(df) == 102
+    assert len(df) == 96
     assert "recordType" in df.columns
     assert "bmUnitID" in df.columns
     assert "timeFrom" in df.columns

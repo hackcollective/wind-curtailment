@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError, IntegrityError
+from sp2ts import dt2sp
 
 from lib.constants import SAVE_DIR, DATA_DIR
 from lib.data.utils import (
@@ -202,13 +203,13 @@ def call_physbm_api(start_date, end_date, unit=None):
     # Nedd to call PNs and BOALs separately in new API
 
     # "https://data.elexon.co.uk/bmrs/api/v1/balancing/physical/all?dataset={dataset}&settlementDate={settlementDate}&settlementPeriod={settlementPeriod}&format=json"
-
     datetimes = pd.date_range(start_date, end_date, freq="30min")
     data_df = []
     for datetime in datetimes:
-        logger.info(f"Getting PV from {datetime}")
+        logger.info(f"Getting PN from {datetime}")
         date = datetime.date()
-        sp = datetime.hour * 2 + datetime.minute // 30 # TODO might not work on clock change
+        datetime = datetime.tz_localize('UTC')
+        sp = dt2sp(datetime)[1]
         url = f"https://data.elexon.co.uk/bmrs/api/v1/balancing/physical/all?dataset=PN&settlementDate={date}&settlementPeriod={sp}"
         if unit is not None:
             url = url + f"&bmUnit={unit}"
@@ -225,7 +226,8 @@ def call_physbm_api(start_date, end_date, unit=None):
     data_df = []
     for datetime in datetimes:
         logger.info(f"Getting BOALF from {datetime}")
-        url = f"https://data.elexon.co.uk/bmrs/api/v1/datasets/BOALF?from={datetime}&to={datetime}"
+        boalf_end_datetime = datetime + pd.Timedelta(minutes=30)
+        url = f"https://data.elexon.co.uk/bmrs/api/v1/datasets/BOALF?from={datetime}&to={boalf_end_datetime}"
         if unit is not None:
             url = url + f"&bmUnit={unit}"
         url = url + "&format=json"
@@ -238,8 +240,8 @@ def call_physbm_api(start_date, end_date, unit=None):
     data_boa_df = pd.concat(data_df)
 
     # rename bmUnit to bmUnitID
-    data_pn_df.rename(columns={"bmUnit": "Unit"}, inplace=True)
-    data_boa_df.rename(columns={"bmUnit": "Unit"}, inplace=True)
+    data_pn_df.rename(columns={"bmUnit": "bmUnitID"}, inplace=True)
+    data_boa_df.rename(columns={"bmUnit": "bmUnitID"}, inplace=True)
 
     # drop dataset column
     data_boa_df.drop(columns=["nationalGridBmUnit"], inplace=True)
@@ -257,6 +259,10 @@ def call_physbm_api(start_date, end_date, unit=None):
     data_boa_df.rename(columns={"rrFlag": "rrScheduleFlag"}, inplace=True)
 
     data_df = pd.concat([data_boa_df, data_pn_df], axis=0)
+    data_df['local_datetime'] = pd.to_datetime(data_df['timeFrom'])
+
+    # remove anything after end_date
+    data_df = data_df[data_df['local_datetime'] <= end_date]
 
     return data_df
 
@@ -265,7 +271,6 @@ def fetch_physical_data(
     start_date, end_date, save_dir: Path, cache=True, unit_ids=None, multiprocess=False, pull_data_once: bool = False
 ):
     """From a brief visual inspection, this returns data that looks the same as the stuff I downloaded manually"""
-
     if cache:
         file_name = save_dir / f"{start_date}-{end_date}.fthr"
         if file_name.exists():
