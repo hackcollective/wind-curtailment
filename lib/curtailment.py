@@ -255,7 +255,11 @@ def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
     df_curtailment["Level_FPN"] = df_curtailment["Level_FPN"] / 30
 
     # remove anything after the end_datetime
-    end_time = pd.to_datetime(end_time).tz_localize("UTC")
+    end_time = pd.to_datetime(end_time)
+    if end_time.tzinfo is None:
+        end_time = end_time.tz_localize("UTC")
+    else:
+        end_time = end_time.tz_convert("UTC")
     df_curtailment = df_curtailment[df_curtailment["Time"] < pd.to_datetime(end_time)]
 
     assert "cost_gbp" in df_curtailment.columns
