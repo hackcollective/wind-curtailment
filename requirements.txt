@@ -34,6 +34,7 @@ streamlit-vertical-slider==1.0.2
 fastapi
 uvicorn
 psutil
+sp2ts
 
 
 # test
