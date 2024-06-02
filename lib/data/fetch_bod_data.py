@@ -140,7 +140,9 @@ def call_api_bod(start_date, end_date, unit = None):
     for datetime in datetimes:
         logger.info(f"Getting BOD from {datetime}")
 
-        url = f"https://data.elexon.co.uk/bmrs/api/v1/datasets/BOD?from={datetime}&to={datetime}"
+        datetime_no_timezone = datetime.tz_localize(None)
+
+        url = f"https://data.elexon.co.uk/bmrs/api/v1/datasets/BOD?from={datetime_no_timezone}&to={datetime_no_timezone}"
         if unit is not None:
             url = url+f"&bmUnit={unit}"
         url = url+"&format=json"
