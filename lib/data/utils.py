@@ -2,11 +2,7 @@ import logging
 import multiprocessing
 
 import pandas as pd
-from ElexonDataPortal import api
 
-API_KEY = "xutthojn7xa28q6"
-
-client = api.Client(API_KEY)
 MINUTES_TO_HOURS = 1 / 60
 N_POOL_INSTANCES = 20
 

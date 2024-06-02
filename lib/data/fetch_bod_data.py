@@ -12,7 +12,7 @@ from sqlalchemy.exc import OperationalError
 
 from lib.constants import SAVE_DIR, DATA_DIR
 from lib.data.utils import (
-    add_bm_unit_type, logger, client, N_POOL_INSTANCES,
+    add_bm_unit_type, logger, N_POOL_INSTANCES,
 )
 
 df_bm_units = pd.read_excel(DATA_DIR / "BMUFuelType.xls", header=0)

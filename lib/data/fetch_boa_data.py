@@ -16,7 +16,7 @@ from lib.constants import SAVE_DIR, DATA_DIR
 from lib.data.utils import (
     add_bm_unit_type,
     parse_boal_from_physical_data,
-    parse_fpn_from_physical_data, logger, client, N_POOL_INSTANCES,
+    parse_fpn_from_physical_data, logger, N_POOL_INSTANCES,
 )
 
 df_bm_units = pd.read_excel(DATA_DIR / "BMUFuelType.xls", header=0)
