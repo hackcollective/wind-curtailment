@@ -254,10 +254,11 @@ def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
     df_curtailment["Level_BOAL"] = df_curtailment["Level_BOAL"] / 30
     df_curtailment["Level_FPN"] = df_curtailment["Level_FPN"] / 30
 
-    # remove anything after the end_datetime
-    end_time = pd.to_datetime(end_time)
-    end_time = add_utc_timezone(end_time)
+    # remove anything after the start and end datetime
+    end_time = add_utc_timezone(pd.to_datetime(end_time))
+    start_time = add_utc_timezone(pd.to_datetime(start_time))
     df_curtailment = df_curtailment[df_curtailment["Time"] < pd.to_datetime(end_time)]
+    df_curtailment = df_curtailment[df_curtailment["Time"] >= pd.to_datetime(start_time)]
 
     assert "cost_gbp" in df_curtailment.columns
     assert "energy_mwh" in df_curtailment.columns

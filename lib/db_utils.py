@@ -67,6 +67,9 @@ class DbRepository:
         logger.debug(f"{start_time=}")
         logger.debug(f"{end_time=}")
 
+        # load 30 minutes more
+        start_time = pd.to_datetime(start_time) - pd.Timedelta(minutes=30)
+
         with self.engine.connect() as conn:
             logger.debug(f"Getting FPNs from {start_time} to {end_time}")
             df_fpn = pd.read_sql(
@@ -89,6 +92,7 @@ class DbRepository:
                 index_col="bmUnitID",
                 parse_dates=["timeFrom", "timeTo"],
             )
+
             logger.info(f"Found {len(df_fpn)} FPNs")
             logger.info(f"Found {len(df_boal)} BOAs")
             logger.info(f"Found {len(df_bod)} BODs")

@@ -205,11 +205,10 @@ def call_physbm_api(start_date, end_date, unit=None):
     data_df = []
     for datetime in datetimes:
         logger.info(f"Getting PN from {datetime}")
-        date = datetime.date()
 
         datetime = add_utc_timezone(datetime)
 
-        sp = dt2sp(datetime)[1]
+        date, sp = dt2sp(datetime)
         url = f"https://data.elexon.co.uk/bmrs/api/v1/balancing/physical/all?dataset=PN&settlementDate={date}&settlementPeriod={sp}"
         if unit is not None:
             url = url + f"&bmUnit={unit}"
