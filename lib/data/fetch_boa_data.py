@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import OperationalError, IntegrityError
 from sp2ts import dt2sp
 
 from lib.constants import SAVE_DIR, DATA_DIR
@@ -79,8 +79,7 @@ def write_fpn_to_db(df_fpn, database_engine) -> bool:
         with database_engine.connect() as connection:
             df_fpn.to_sql("fpn", connection, if_exists="append", index_label="unit")
         return True
-    except Exception as e:
-        print(e)
+    except OperationalError:
         return False
 
 
@@ -115,8 +114,7 @@ def write_boal_to_db(df_boal, database_engine) -> bool:
                         logging.warning(e)
                         pass
         return True
-    except Exception as e:
-        print(e)
+    except OperationalError:
         return False
 
 

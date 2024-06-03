@@ -79,7 +79,6 @@ def write_bod_to_db(df_fpn, database_engine) -> bool:
         return True
     except OperationalError as e:
         logger.warning(e)
-        print(e)
         return False
 
 

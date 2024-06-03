@@ -24,7 +24,6 @@ def test_fetch_bod_data():
         database_engine=engine,
         chunk_size_in_days=1 / 24,
         cache=False,
-        multiprocess=False,
     )
 
     with engine.connect() as conn:
