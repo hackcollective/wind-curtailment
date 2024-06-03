@@ -260,6 +260,9 @@ def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
     df_curtailment = df_curtailment[df_curtailment["Time"] < pd.to_datetime(end_time)]
     df_curtailment = df_curtailment[df_curtailment["Time"] >= pd.to_datetime(start_time)]
 
+    # reset index
+    df_curtailment.reset_index(drop=True, inplace=True)
+
     assert "cost_gbp" in df_curtailment.columns
     assert "energy_mwh" in df_curtailment.columns
     assert "delta" in df_curtailment.columns
