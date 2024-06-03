@@ -2,11 +2,7 @@ import logging
 import multiprocessing
 
 import pandas as pd
-from ElexonDataPortal import api
 
-API_KEY = "xutthojn7xa28q6"
-
-client = api.Client(API_KEY)
 MINUTES_TO_HOURS = 1 / 60
 N_POOL_INSTANCES = 20
 
@@ -45,3 +41,12 @@ def parse_boal_from_physical_data(df: pd.DataFrame) -> pd.DataFrame:
         inplace=True,
     )
     return df.dropna(axis=1, how="all")
+
+
+def add_utc_timezone(datetime):
+    """ Add utc timezone to datetime. """
+    if datetime.tzinfo is None:
+        datetime = datetime.tz_localize('UTC')
+    else:
+        datetime = datetime.tz_convert('UTC')
+    return datetime

@@ -3,6 +3,7 @@ import logging
 import os
 import time
 from pathlib import Path
+import requests
 
 import numpy as np
 import pandas as pd
@@ -11,7 +12,7 @@ from sqlalchemy.exc import OperationalError
 
 from lib.constants import SAVE_DIR, DATA_DIR
 from lib.data.utils import (
-    add_bm_unit_type, logger, client, N_POOL_INSTANCES,
+    add_bm_unit_type, logger, N_POOL_INSTANCES,
 )
 
 df_bm_units = pd.read_excel(DATA_DIR / "BMUFuelType.xls", header=0)
@@ -128,10 +129,49 @@ def fetch_and_load_one_chunk(
         bod_success = write_bod_to_db(df,database_engine)
 
 
-def call_api_bod(start_date, end_date, unit):
+def call_api_bod(start_date, end_date, unit = None):
     """Thin wrapper to allow kwarg passing with starmap"""
     logger.info(f"Calling BOD API for {unit}")
-    return client.get_BOD(start_date=start_date, end_date=end_date, BMUnitId=unit)
+
+    # "https://data.elexon.co.uk/bmrs/api/v1/datasets/BOD?from=2024-03-01&to=2024-03-01&bmUnit=T_ACHRW-1&format=json"
+    datetimes = pd.date_range(start_date, end_date, freq="30min")
+    data_df = []
+    for datetime in datetimes:
+        logger.info(f"Getting BOD from {datetime}")
+
+        datetime_no_timezone = datetime.tz_localize(None)
+
+        url = f"https://data.elexon.co.uk/bmrs/api/v1/datasets/BOD?from={datetime_no_timezone}&to={datetime_no_timezone}"
+        if unit is not None:
+            url = url+f"&bmUnit={unit}"
+        url = url+"&format=json"
+
+        r = requests.get(url)
+
+        data_one_settlement_period_df = pd.DataFrame(r.json()["data"])
+        data_df.append(data_one_settlement_period_df)
+
+    data_df = pd.concat(data_df)
+
+    # rename bmUnit to bmUnitID
+    data_df.rename(columns={"bmUnit": "bmUnitID"}, inplace=True)
+
+    # drop dataset column
+    data_df.drop(columns=["nationalGridBmUnit"], inplace=True)
+
+    # rename LevelFrom to bidOfferLevelFrom
+    data_df.rename(columns={"levelFrom": "bidOfferLevelFrom"}, inplace=True)
+    data_df.rename(columns={"levelTo": "bidOfferLevelTo"}, inplace=True)
+    data_df.rename(columns={"pairId": "bidOfferPairNumber"}, inplace=True)
+    data_df.rename(columns={"offer": "offerPrice"}, inplace=True)
+    data_df.rename(columns={"bid": "bidPrice"}, inplace=True)
+    data_df.rename(columns={"dataset": "recordType"}, inplace=True)
+
+    data_df['local_datetime'] = pd.to_datetime(data_df['timeFrom'])
+    # remove anything after end_date
+    data_df = data_df[data_df['local_datetime'] < end_date]
+
+    return data_df
 
 
 def fetch_bod_data(
@@ -140,6 +180,7 @@ def fetch_bod_data(
     """From a brief visual inspection, this returns data that looks the same as the stuff I downloaded manually"""
 
     if cache:
+        logger.info('Loading BOD data from cache')
         file_name = save_dir / f"BOD_{start_date}-{end_date}.feather"
         if file_name.exists():
             return pd.read_feather(file_name)
@@ -165,7 +206,8 @@ def fetch_bod_data(
                 unit_dfs.append(call_api_bod(start_date, end_date, unit))
         df = pd.concat(unit_dfs)
     else:
-        df = client.get_BOD(start_date=start_date, end_date=end_date)
+
+        df = call_api_bod(start_date=start_date, end_date=end_date)
         if unit_ids is not None:
             df = df[df["bmUnitID"].isin(unit_ids)]
 

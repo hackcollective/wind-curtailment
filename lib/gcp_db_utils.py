@@ -41,7 +41,7 @@ def write_curtailment_data(df: pd.DataFrame):
 
 
 def write_sbp_data(df: pd.DataFrame):
-    df = df.rename(columns={"local_datetime": "time", "systemBuyPrice": "system_buy_price"})
+    df = df.rename(columns={"local_datetime": "time", "systemSellPrice": "system_buy_price"})
 
     df = df[["time", "system_buy_price"]]
 

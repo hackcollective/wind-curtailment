@@ -1,7 +1,6 @@
 alembic
 argon2-cffi==21.3.0
 argon2-cffi-bindings==21.2.0
-ElexonDataPortal
 numpy
 pandas==1.5.3
 plotly
@@ -34,6 +33,7 @@ streamlit-vertical-slider==1.0.2
 fastapi
 uvicorn
 psutil
+sp2ts
 
 
 # test

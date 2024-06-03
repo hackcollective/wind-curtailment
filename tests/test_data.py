@@ -6,8 +6,8 @@ from lib.data.fetch_bod_data import fetch_bod_data
 
 def test_fetch_bod_data():
 
-    start_date = "2022-01-01"
-    end_date = "2022-01-01 08:00"
+    start_date = "2024-04-01"
+    end_date = "2024-04-01 08:00"
 
     unit_ids = ["T_ABRBO-1", "E_ABRTW-1", "T_ACHRW-1"]
 
