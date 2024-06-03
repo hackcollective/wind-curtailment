@@ -15,8 +15,8 @@ def test_fetch_and_load_data():
     assert df["level_after_boal"].mean() > 13000
     assert df["level_after_boal"].mean() < 15000
 
-    assert df["cost_gbp"].mean() >= 40000
-    assert df["cost_gbp"].mean() <= 50000
+    assert df["cost_gbp"].mean() >= 50000
+    assert df["cost_gbp"].mean() <= 60000
 
     assert pd.to_datetime(df['time'][0]) == pd.Timestamp("2024-04-06 06:00:00+01:00")
 

@@ -39,5 +39,5 @@ def test_fetch_fpn_data():
             parse_dates=["timeFrom", "timeTo"],
         )
 
-    assert len(df_boa) == 147
-    assert len(df_fpn) == 3178
+    assert len(df_boa) == 215
+    assert len(df_fpn) == 3010

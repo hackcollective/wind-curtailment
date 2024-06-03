@@ -205,11 +205,10 @@ def call_physbm_api(start_date, end_date, unit=None):
     data_df = []
     for datetime in datetimes:
         logger.info(f"Getting PN from {datetime}")
-        date = datetime.date()
 
         datetime = add_utc_timezone(datetime)
 
-        sp = dt2sp(datetime)[1]
+        date, sp = dt2sp(datetime)
         url = f"https://data.elexon.co.uk/bmrs/api/v1/balancing/physical/all?dataset=PN&settlementDate={date}&settlementPeriod={sp}"
         if unit is not None:
             url = url + f"&bmUnit={unit}"
@@ -227,8 +226,8 @@ def call_physbm_api(start_date, end_date, unit=None):
     for datetime in datetimes:
         logger.info(f"Getting BOALF from {datetime}")
         boalf_end_datetime = (datetime + pd.Timedelta(minutes=30)).tz_localize(None)
-        datetime_no_timezone = datetime.tz_localize(None)
-        url = f"https://data.elexon.co.uk/bmrs/api/v1/datasets/BOALF?from={datetime_no_timezone}&to={boalf_end_datetime}"
+        boalf_start_datetime = (datetime - pd.Timedelta(minutes=30)).tz_localize(None)
+        url = f"https://data.elexon.co.uk/bmrs/api/v1/datasets/BOALF?from={boalf_start_datetime}&to={boalf_end_datetime}"
         if unit is not None:
             url = url + f"&bmUnit={unit}"
         url = url + "&format=json"
