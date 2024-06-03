@@ -9,14 +9,14 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
-from sqlalchemy.exc import OperationalError, IntegrityError
+from sqlalchemy.exc import IntegrityError
 from sp2ts import dt2sp
 
 from lib.constants import SAVE_DIR, DATA_DIR
 from lib.data.utils import (
     add_bm_unit_type,
     parse_boal_from_physical_data,
-    parse_fpn_from_physical_data, logger, N_POOL_INSTANCES,
+    parse_fpn_from_physical_data, logger, N_POOL_INSTANCES, add_utc_timezone,
 )
 
 df_bm_units = pd.read_excel(DATA_DIR / "BMUFuelType.xls", header=0)
@@ -209,10 +209,7 @@ def call_physbm_api(start_date, end_date, unit=None):
         logger.info(f"Getting PN from {datetime}")
         date = datetime.date()
 
-        if datetime.tzinfo is None:
-            datetime = datetime.tz_localize('UTC')
-        else:
-            datetime = datetime.tz_convert('UTC')
+        datetime = add_utc_timezone(datetime)
 
         sp = dt2sp(datetime)[1]
         url = f"https://data.elexon.co.uk/bmrs/api/v1/balancing/physical/all?dataset=PN&settlementDate={date}&settlementPeriod={sp}"

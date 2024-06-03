@@ -41,3 +41,12 @@ def parse_boal_from_physical_data(df: pd.DataFrame) -> pd.DataFrame:
         inplace=True,
     )
     return df.dropna(axis=1, how="all")
+
+
+def add_utc_timezone(datetime):
+    """ Add utc timezone to datetime. """
+    if datetime.tzinfo is None:
+        datetime = datetime.tz_localize('UTC')
+    else:
+        datetime = datetime.tz_convert('UTC')
+    return datetime

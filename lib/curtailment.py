@@ -3,7 +3,7 @@ from typing import Optional
 
 import pandas as pd
 
-from lib.data.utils import MINUTES_TO_HOURS
+from lib.data.utils import MINUTES_TO_HOURS, add_utc_timezone
 from lib.db_utils import DbRepository
 
 logger = logging.getLogger(__name__)
@@ -256,10 +256,7 @@ def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
 
     # remove anything after the end_datetime
     end_time = pd.to_datetime(end_time)
-    if end_time.tzinfo is None:
-        end_time = end_time.tz_localize("UTC")
-    else:
-        end_time = end_time.tz_convert("UTC")
+    end_time = add_utc_timezone(end_time)
     df_curtailment = df_curtailment[df_curtailment["Time"] < pd.to_datetime(end_time)]
 
     assert "cost_gbp" in df_curtailment.columns
