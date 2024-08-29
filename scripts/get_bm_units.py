@@ -1,6 +1,7 @@
 """Script to get all bm units
 
-Once extra have been found, they can be added to lib.constants.df_bm_units
+Once extra have been found, they can be added to lib.constants.df_bm_units.
+Of course this would be good to be automatic, but for now this is a manual process.
 """
 import elexonpy
 from datetime import datetime, timedelta
