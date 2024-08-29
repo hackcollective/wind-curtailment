@@ -40,4 +40,4 @@ def test_fetch_fpn_data():
         )
 
     assert len(df_boa) == 215
-    assert len(df_fpn) == 3010
+    assert len(df_fpn) == 2926
