@@ -45,3 +45,7 @@ for _, m in missing_units.iterrows():
     print(m._bm_unit, m._installed_capacity, m._publish_time)
 
 print(f'Total extra capacity is {missing_units["_installed_capacity"].sum()} MW')
+
+print('These units can be added to lib.constants.df_bm_units')
+for _, m in missing_units.iterrows():
+    print(f'"{m._bm_unit}",')

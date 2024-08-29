@@ -33,6 +33,29 @@ def get_df_bm_units():
         "E_THNTW-1",
         "E_THNTW-2",
     ]
+
+    # more units https://github.com/hackcollective/wind-curtailment/pull/90
+    extra_wind_units += [
+        "2__PSMAE001",
+        "2__PSMAE001",
+        "T_SGRWO-1",
+        "T_SGRWO-1",
+        "T_DBAWO-4",
+        "T_DBAWO-3",
+        "T_DBAWO-2",
+        "T_DBAWO-1",
+        "T_DBAWO-5",
+        "T_VKNGW-2",
+        "T_VKNGW-4",
+        "T_VKNGW-3",
+        "T_VKNGW-1",
+        "E_KHLLW-1",
+        "T_MOWWO-4",
+        "T_MOWWO-3",
+        "T_MOWWO-2",
+        "T_MOWWO-1",
+        ]
+
     df_bm_extra_units = pd.DataFrame(extra_wind_units, columns=['SETT_BMU_ID'])
     df_bm_extra_units['FUEL TYPE'] = 'WIND'
     df_bm_units = pd.concat([df_bm_units, df_bm_extra_units])
