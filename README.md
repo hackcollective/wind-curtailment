@@ -52,7 +52,13 @@ In the Github [workflow](./.github/workflows/deploy.yaml)
 Depends upon a single deploy secret (GLOUD_AUTH) which is in `Secrets > Actions` in Github, and is a base64 encoded
 version of the default service account credentials in GCP.
 
-
 ## FAQs
+
+### BM units
+Q: How do we make sure new BM units are being used?
+
+A: Currently we manually update them every 6 months (or so).
+This is done by running the `scripts/update_bm_units.py` script.
+This script will fetch the latest BM units from the Elexon API and the update needs to happen in `lib.constants.py`.
 
 TODO
