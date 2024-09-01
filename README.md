@@ -59,6 +59,6 @@ Q: How do we make sure new BM units are being used?
 
 A: Currently we manually update them every 6 months (or so).
 This is done by running the `scripts/update_bm_units.py` script.
-This script will fetch the latest BM units from the Elexon API and the update needs to happen in `lib.constants.py`.
+This script will fetch the latest BM units from the Elexon API and the update the csv in `data/BMU.csv`.
 
 TODO
