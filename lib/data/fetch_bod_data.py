@@ -10,12 +10,10 @@ import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
 
-from lib.constants import SAVE_DIR, DATA_DIR
+from lib.constants import SAVE_DIR, df_bm_units
 from lib.data.utils import (
     add_bm_unit_type, logger, N_POOL_INSTANCES,
 )
-
-df_bm_units = pd.read_excel(DATA_DIR / "BMUFuelType.xls", header=0)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

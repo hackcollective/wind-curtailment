@@ -3,10 +3,16 @@
 Once extra have been found, they can be added to lib.constants.df_bm_units.
 Of course this would be good to be automatic, but for now this is a manual process.
 """
-import elexonpy
 from datetime import datetime, timedelta
+from pathlib import Path
+
+import elexonpy
 import pandas as pd
-from lib.constants import df_bm_units # these are the current bm units
+
+from lib.constants import df_bm_units  # these are the current bm units
+
+BASE_DIR = Path(__file__).parent.parent
+DATA_DIR = BASE_DIR / "data"
 
 api_instance = elexonpy.DatasetsApi()
 start_date = datetime(2000, 1, 1)
@@ -14,7 +20,7 @@ end_date = datetime.today()
 
 all_bm_units = []
 # loop over years of data
-while start_date.year < end_date.year+1:
+while start_date.year < end_date.year + 1:
     print(start_date)
 
     api_response = api_instance.datasets_igcpu_get(
@@ -38,14 +44,32 @@ missing_units = missing_units[missing_units["_bm_unit"].notnull()]
 # order by _publish_time
 missing_units = missing_units.sort_values("_publish_time")
 
-print(f'Found {len(missing_units)} extra units in the BM data.')
-print('Found the following extra units:')
+print(f"Found {len(missing_units)} extra units in the BM data.")
+print("Found the following extra units:")
 
 for _, m in missing_units.iterrows():
     print(m._bm_unit, m._installed_capacity, m._publish_time)
 
 print(f'Total extra capacity is {missing_units["_installed_capacity"].sum()} MW')
 
-print('These units can be added to lib.constants.df_bm_units')
-for _, m in missing_units.iterrows():
-    print(f'"{m._bm_unit}",')
+# append extra units
+missing_units.rename(
+    columns={
+        "_bm_unit": "SETT_BMU_ID",
+        "_effective_from": "EFF_FROM",
+        "_registered_resource_name": "NGC_BMU_ID",
+    },
+    inplace=True,
+)
+missing_units["FUEL TYPE"] = "WIND"
+missing_units = missing_units[["SETT_BMU_ID", "EFF_FROM", "NGC_BMU_ID", "FUEL TYPE"]]
+# order by EFF_FROM
+missing_units = missing_units.sort_values("EFF_FROM")
+df_bm_units_extra = pd.concat([df_bm_units, missing_units])
+
+# drop duplicated in the SETT_BMU_ID column
+df_bm_units_extra = df_bm_units_extra.drop_duplicates(subset="NGC_BMU_ID")
+
+# save to csv
+# note this override the current CSV file
+df_bm_units_extra.to_csv(DATA_DIR / "BMU.csv", index=False)
