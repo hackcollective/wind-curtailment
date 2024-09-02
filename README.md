@@ -11,7 +11,6 @@ By pulling data from Elexon, we combine FPNs, BOALS, and BOD to see the effects 
 
 More details are [here](https://wooden-knee-d53.notion.site/UK-Wind-Curtailment-Monitor-Methodology-71475d0b7cfd4edb97d6397b358f4118)
 
-
 ## Data
 We use the Elexon API to get data. See `scripts/fetch_data.py`. This is saved to an SQLite DB. Note that raw data is also saved as `feather` files to `./data/PHYBM/raw`.
 
