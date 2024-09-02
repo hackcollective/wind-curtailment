@@ -1,7 +1,7 @@
 alembic
 argon2-cffi==21.3.0
 argon2-cffi-bindings==21.2.0
-numpy
+numpy==1.23.4
 pandas==1.5.3
 plotly
 powerdict
