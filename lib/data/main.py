@@ -92,10 +92,12 @@ def fetch_and_load_data(
         logger.info("Running analysis")
         db = DbRepository(db_url)
         df = analyze_curtailment(db, str(start_chunk), str(end_chunk))
+        logger.info("Running analysis: done")
 
+        logger.info("Saving results")
         df.to_csv(f"./data/outputs/results-{start_chunk}-{end_chunk}.csv")
 
-        # load csv and save to database
+        # load data and format dataframe
         df = load_data(f"./data/outputs/results-{start_chunk}-{end_chunk}.csv")
 
         logger.info(f"Pushing to postgres, {len(df)} rows")
