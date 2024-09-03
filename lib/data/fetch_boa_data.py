@@ -12,14 +12,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError, IntegrityError
 from sp2ts import dt2sp
 
-from lib.constants import SAVE_DIR, DATA_DIR
+from lib.constants import SAVE_DIR, df_bm_units
 from lib.data.utils import (
     add_bm_unit_type,
     parse_boal_from_physical_data,
     parse_fpn_from_physical_data, logger, N_POOL_INSTANCES, add_utc_timezone,
 )
-
-df_bm_units = pd.read_excel(DATA_DIR / "BMUFuelType.xls", header=0)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
