@@ -97,6 +97,9 @@ def fetch_and_load_data(
         logger.info("Saving results")
         df.to_csv(f"./data/outputs/results-{start_chunk}-{end_chunk}.csv")
 
+        # load data and format dataframe
+        df = load_data(f"./data/outputs/results-{start_chunk}-{end_chunk}.csv")
+
         logger.info(f"Pushing to postgres, {len(df)} rows")
         if save:
             try:
