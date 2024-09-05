@@ -24,7 +24,8 @@ jobs:
         pip install elexonpy
     - name: Update abm units
       run: |
-        scripts/get_bm_units.py
+        echo "PYTHONPATH=${PYTHONPATH}:/lib" >> $GITHUB_ENV
+        python scripts/get_bm_units.py
 
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v4
