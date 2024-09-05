@@ -1,9 +1,10 @@
+name: Update Bm Units
 on:
 schedule:
     - cron: "* * 1 * *"
 
 jobs:
-CloudList:
+  updateBmUnits:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout the repo
@@ -19,6 +20,7 @@ CloudList:
         pip install -r requirements.txt
     - name: Update available cloud list
       run: |
+        export PYTHONPATH=${PYTHONPATH}:/lib
         scripts/get_bm_units.py
 
     - name: Create Pull Request
