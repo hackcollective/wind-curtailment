@@ -2,6 +2,10 @@
 
 Once extra have been found, they can be added to lib.constants.df_bm_units.
 Of course this would be good to be automatic, but for now this is a manual process.
+
+notes:
+1. This is used in a github actions to update the bm units
+2. You need to install elexonpy from pypi to run this script.
 """
 from datetime import datetime, timedelta
 from pathlib import Path
