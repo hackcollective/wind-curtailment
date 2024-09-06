@@ -1,7 +1,7 @@
 name: Update Bm Units
 on:
   schedule:
-    - cron: "* * 1 * *"
+    - cron: "* * 7 * *"
 
 jobs:
   updateBmUnits:
