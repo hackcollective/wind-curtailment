@@ -2,6 +2,10 @@
 
 Once extra have been found, they can be added to lib.constants.df_bm_units.
 Of course this would be good to be automatic, but for now this is a manual process.
+
+notes:
+1. This is used in a github actions to update the bm units
+2. You need to install elexonpy from pypi to run this script.
 """
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -38,6 +42,8 @@ bm_units = bm_units[bm_units["_psr_type"].str.contains("Wind")]
 
 # look which units are missing in bmufuel_types
 missing_units = bm_units[~bm_units["_bm_unit"].isin(df_bm_units["SETT_BMU_ID"])]
+missing_units = bm_units[~bm_units["_registered_resource_name"].isin(df_bm_units["NGC_BMU_ID"])]
+
 # get rid of units with no bm_unit
 missing_units = missing_units[missing_units["_bm_unit"].notnull()]
 
@@ -48,7 +54,7 @@ print(f"Found {len(missing_units)} extra units in the BM data.")
 print("Found the following extra units:")
 
 for _, m in missing_units.iterrows():
-    print(m._bm_unit, m._installed_capacity, m._publish_time)
+    print(m._bm_unit, m._installed_capacity, m._publish_time, m._registered_resource_name)
 
 print(f'Total extra capacity is {missing_units["_installed_capacity"].sum()} MW')
 
