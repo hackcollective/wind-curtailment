@@ -195,14 +195,18 @@ download_data = download_data.rename(columns={"level_fpn_mw": "wind_potential_mw
 csv = download_data.to_csv().encode("utf-8")
 
 st.header(f"Download")
-st.download_button(
-    label="Download data as CSV",
-    data=csv,
-    file_name=f"wind_curtailment_{current_hour}.csv",
-    mime="text/csv",
-)
-
-st.markdown("Please reference [![DOI](https://zenodo.org/badge/499136108.svg)](https://doi.org/10.5281/zenodo.13936552)")
+col1, col2,col3 = st.columns(3)
+with col1:
+    st.download_button(
+        label="Download data as CSV",
+        data=csv,
+        file_name=f"wind_curtailment_{current_hour}.csv",
+        mime="text/csv",
+    )
+with col2:
+    st.markdown("Please reference the following DOI if you use the data")
+with col3:
+    st.markdown("[![DOI](https://zenodo.org/badge/499136108.svg)](https://doi.org/10.5281/zenodo.13936552)")
 
 st.markdown("<div style='text-align: center; margin-top: 50px; color: rgba(40,80,80,0.9)'> "
             "<p>🛠 Made by <a href='https://www.linkedin.com/in/peter-dudfield-b379b7a6/'>Peter Dudfield </a>"
