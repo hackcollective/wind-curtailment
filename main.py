@@ -187,6 +187,7 @@ write_all_year_plot(filtered_df)
 
 csv = df.to_csv().encode("utf-8")
 
+st.header(f"Download")
 st.download_button(
     label="Download data as CSV",
     data=csv,
