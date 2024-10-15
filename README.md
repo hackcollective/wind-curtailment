@@ -1,5 +1,7 @@
 # UK Wind Curtailment Monitor
 
+[![DOI](https://zenodo.org/badge/499136108.svg)](https://doi.org/10.5281/zenodo.13936552)
+
 Exploring the wind power that the UK is discarding due to transmission constraints
 
 [https://wind.axle.energy](https://wind.axle.energy/)
