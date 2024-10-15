@@ -1,8 +1,10 @@
 # UK Wind Curtailment Monitor
 
+[![DOI](https://zenodo.org/badge/499136108.svg)](https://doi.org/10.5281/zenodo.13936552)
+
 Exploring the wind power that the UK is discarding due to transmission constraints
 
-https://wind-curtailment-app-ahq7fucdyq-lz.a.run.app/
+[https://wind.axle.energy](https://wind.axle.energy/)
 
 
 ## Methodology
@@ -56,8 +58,8 @@ version of the default service account credentials in GCP.
 ### BM units
 Q: How do we make sure new BM units are being used?
 
-A: Currently we manually update them every 6 months (or so).
-This is done by running the `scripts/update_bm_units.py` script.
-This script will fetch the latest BM units from the Elexon API and the update the csv in `data/BMU.csv`.
+A: We have a Github actions that runs once a month. This adds any new BM units to a PR which can then be merged in. 
 
-TODO
+Q: How can I get the data?
+
+A: You can log on to the [app](https://wind.axle.energy/), and download the data at the bottom. If possible remember to site the data with the DOI above. 
