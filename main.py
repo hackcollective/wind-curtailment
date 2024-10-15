@@ -184,6 +184,18 @@ write_monthly_plot(filtered_df, month_and_year)
 write_yearly_plot(filtered_df, year)
 write_all_year_plot(filtered_df)
 
+
+csv = df.to_csv().encode("utf-8")
+
+st.download_button(
+    label="Download data as CSV",
+    data=csv,
+    file_name=f"wind_curtailment_{current_hour}.csv",
+    mime="text/csv",
+)
+
+st.markdown("Please reference [![DOI](https://zenodo.org/badge/499136108.svg)](https://doi.org/10.5281/zenodo.13936552)")
+
 st.markdown("<div style='text-align: center; margin-top: 50px; color: rgba(40,80,80,0.9)'> "
             "<p>🛠 Made by <a href='https://www.linkedin.com/in/peter-dudfield-b379b7a6/'>Peter Dudfield </a>"
             "and <a href='https://www.linkedin.com/in/archy-de-berker/'>Archy de Berker</a> </p>"
