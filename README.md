@@ -60,6 +60,6 @@ Q: How do we make sure new BM units are being used?
 
 A: We have a Github actions that runs once a month. This adds any new BM units to a PR which can then be merged in. 
 
-Q: How can i get the data?
+Q: How can I get the data?
 
-A: You can log on to the app, and download the data at the bottom. if possible remember to site us using the DOI above. 
+A: You can log on to the [app](https://wind.axle.energy/), and download the data at the bottom. If possible remember to site the data with the DOI above. 
