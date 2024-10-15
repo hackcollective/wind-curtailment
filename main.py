@@ -185,7 +185,14 @@ write_yearly_plot(filtered_df, year)
 write_all_year_plot(filtered_df)
 
 
-csv = df.to_csv().encode("utf-8")
+download_data = df
+# rename
+download_data = download_data.rename(columns={"level_fpn_mw": "wind_potential_mw",
+                                              "level_after_boal_mw": "wind_delivered_mw",
+                                              "level_fpn_mwh": "wind_potential_mwh",
+                                              "level_after_boal_mwh": "wind_delivered_mwh",
+                                              "cost_gbp": "turndown_cost_gbp"})
+csv = download_data.to_csv().encode("utf-8")
 
 st.header(f"Download")
 st.download_button(
