@@ -1,0 +1,40 @@
+name: Update Bm Units
+on:
+  schedule:
+    - cron: "0 0 7 * *"
+
+jobs:
+  updateBmUnits:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout the repo
+      uses: actions/checkout@v2
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v2
+      with:
+        python-version: "3.11"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+        # extra installation needed for this script
+        pip install elexonpy
+
+    - name: set pythonpath
+      run: echo "PYTHONPATH=${PYTHONPATH}:/lib" >> $GITHUB_ENV
+
+    - name: Update bm units
+      run: python scripts/get_bm_units.py
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v4
+      with:
+        commit-message: Update Bm units
+        title: Update Bm units
+        body: Update Bm units csv
+        base: main
+        labels: automated-pr, Clouds & Regions
+        branch: update-bm-units
+        delete-branch: true

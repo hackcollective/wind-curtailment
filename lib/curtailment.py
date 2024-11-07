@@ -190,7 +190,7 @@ def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
     units_bod = df_bod.index.unique()
 
     units = sorted(set(list(units_fpn) + list(units_boa) + list(units_bod)))
-    logger.debug(f"Looking at {len(units)} units")
+    logger.info(f"Looking at {len(units)} units")
 
     for i, unit in enumerate(units):
         logger.debug(f"Analyzing {unit} ({i}/{len(units)})")
@@ -234,7 +234,7 @@ def analyze_curtailment(db: DbRepository, start_time, end_time) -> pd.DataFrame:
 
     df_curtailment = pd.concat(curtailment_dfs).copy()
     total_curtailment = df_curtailment["delta"].sum() * MINUTES_TO_HOURS
-    logger.debug(f"Total curtailment was {total_curtailment:.2f} MWh ")
+    logger.info(f"Total curtailment was {total_curtailment:.2f} MWh ")
 
     # this sometimes happens when there are no boas
     df_curtailment["Level_BOAL"] = df_curtailment["Level_BOAL"].fillna(0.0)

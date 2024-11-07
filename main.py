@@ -186,6 +186,30 @@ write_monthly_plot(filtered_df, month_and_year)
 write_yearly_plot(filtered_df, year)
 write_all_year_plot(filtered_df)
 
+
+download_data = df
+# rename
+download_data = download_data.rename(columns={"level_fpn_mw": "wind_potential_mw",
+                                              "level_after_boal_mw": "wind_delivered_mw",
+                                              "level_fpn_mwh": "wind_potential_mwh",
+                                              "level_after_boal_mwh": "wind_delivered_mwh",
+                                              "cost_gbp": "turndown_cost_gbp"})
+csv = download_data.to_csv().encode("utf-8")
+
+st.header(f"Download")
+col1, col2,col3 = st.columns(3)
+with col1:
+    st.download_button(
+        label="Download data as CSV",
+        data=csv,
+        file_name=f"wind_curtailment_{current_hour}.csv",
+        mime="text/csv",
+    )
+with col2:
+    st.markdown("Please reference the following DOI if you use the data")
+with col3:
+    st.markdown("[![DOI](https://zenodo.org/badge/499136108.svg)](https://doi.org/10.5281/zenodo.13936552)")
+
 st.markdown("<div style='text-align: center; margin-top: 50px; color: rgba(40,80,80,0.9)'> "
             "<p>🛠 Made by <a href='https://www.linkedin.com/in/peter-dudfield-b379b7a6/'>Peter Dudfield </a>"
             "and <a href='https://www.linkedin.com/in/archy-de-berker/'>Archy de Berker</a> </p>"
