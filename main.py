@@ -83,7 +83,7 @@ def write_summary_box(df: pd.DataFrame, energy_units="GWh", price_units="M"):
 
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric(label=f"Curtailed Wind - {curtailment_percentage:,.0f} %",
+        st.metric(label=f"Curtailed Wind ({curtailment_percentage:,.0f}%)",
                   value=f"{curtailment:,.1f} {energy_units}")
     with col2:
         st.metric(label=f"Cost", value=f"£{total_curtailment_cost:,.1f}{price_units}")
