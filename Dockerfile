@@ -2,7 +2,7 @@ FROM python:3.10-slim as base
 
 RUN apt-get update && apt-get install && \
     apt-get install g++ --yes && \
-    apt-get install wkhtmltopdf --yes && \
+    # apt-get install wkhtmltopdf --yes && \
     pip3 install argon2-cffi && \
     apt-get install libpq-dev --yes
 
